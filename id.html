@@ -1,0 +1,1041 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="ev/sana-icon.png">
+<title>QA-2609-11 Laporan Cacat sana.run</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+
+<style>
+  /* Formal defect report. ASCII only, including comments, so no reader's software
+     has to guess an encoding. Fields over prose: every record is labelled data. */
+  :root {
+    --paper:#e9ebe7; --sheet:#fbfbf9; --ink:#15181b; --soft:#5a6066;
+    --rule:#c4c9c3; --faint:#dfe3de; --band:#f1f2ef;
+    --p0:#c0392b; --p1:#8a5d18; --p2:#33548c; --p3:#6d7370;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:#121517; --sheet:#191d20; --ink:#e6e8e4; --soft:#949a9f;
+      --rule:#30363c; --faint:#242a2f; --band:#1f2428;
+      --p0:#e8705c; --p1:#cfa157; --p2:#7fa4de; --p3:#9aa19d;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#121517; --sheet:#191d20; --ink:#e6e8e4; --soft:#949a9f;
+    --rule:#30363c; --faint:#242a2f; --band:#1f2428;
+    --p0:#e8705c; --p1:#cfa157; --p2:#7fa4de; --p3:#9aa19d;
+  }
+
+  * { box-sizing:border-box; margin:0; }
+  body { background:var(--paper); color:var(--ink);
+         font-family:"Public Sans",ui-sans-serif,system-ui,sans-serif;
+         font-size:14.5px; line-height:1.55; }
+  .mono { font-family:"JetBrains Mono",ui-monospace,Menlo,monospace; font-variant-numeric:tabular-nums; }
+  .doc { max-width:54rem; margin:0 auto; background:var(--sheet);
+         border-left:1px solid var(--rule); border-right:1px solid var(--rule); }
+  .pad { padding:1.9rem 2.75rem; }
+  @media (max-width:44rem) { .pad { padding:1.25rem 1.1rem; } }
+
+  /* Masthead */
+  .masthead { border-bottom:2px solid var(--ink); }
+  .masthead .line { display:flex; flex-wrap:wrap; gap:0.5rem 1.5rem; justify-content:space-between;
+                    font-family:"JetBrains Mono",monospace; font-size:0.68rem;
+                    letter-spacing:0.12em; text-transform:uppercase; color:var(--soft); }
+  h1 { font-family:"Source Serif 4",Georgia,serif; font-weight:600;
+       font-size:1.7rem; line-height:1.2; margin:0.85rem 0 0; letter-spacing:-0.005em; }
+  .classline { margin-top:0.5rem; font-size:0.8rem; color:var(--p0); font-weight:600; }
+
+  h2 { font-family:"Source Serif 4",Georgia,serif; font-weight:600; font-size:1.05rem;
+       line-height:1.3; margin-bottom:0.7rem; }
+  h2 .num { font-family:"JetBrains Mono",monospace; font-size:0.78rem; color:var(--soft);
+            margin-right:0.7rem; font-weight:400; }
+  h3 { font-family:"Source Serif 4",Georgia,serif; font-size:1rem; font-weight:600; margin-bottom:0.15rem; }
+  section { border-top:1px solid var(--rule); }
+  p { margin:0; max-width:70ch; }
+
+  /* Field grid: the report's basic unit. Label left, value right, nothing else. */
+  dl.fields { display:grid; grid-template-columns:9.5rem 1fr; gap:0.3rem 1.25rem; font-size:0.85rem; }
+  dl.fields dt { color:var(--soft); font-size:0.7rem; letter-spacing:0.08em;
+                 text-transform:uppercase; padding-top:0.13rem; }
+  dl.fields dd { margin:0; max-width:68ch; }
+  @media (max-width:34rem) {
+    dl.fields { grid-template-columns:1fr; gap:0.1rem; }
+    dl.fields dt { margin-top:0.55rem; }
+  }
+
+  .scroll { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:0.82rem; }
+  th { text-align:left; font-weight:600; font-size:0.66rem; letter-spacing:0.1em;
+       text-transform:uppercase; color:var(--soft); padding:0.45rem 0.85rem 0.45rem 0;
+       border-bottom:1px solid var(--ink); white-space:nowrap; background:var(--band); }
+  th:first-child, td:first-child { padding-left:0.6rem; }
+  td { padding:0.5rem 0.85rem 0.5rem 0; border-bottom:1px solid var(--faint); vertical-align:top; }
+  th:last-child, td:last-child { padding-right:0.6rem; }
+  tbody tr:nth-child(even) { background:var(--band); }
+
+  .sev { font-family:"JetBrains Mono",monospace; font-weight:500; }
+  .sev.s0 { color:var(--p0); } .sev.s1 { color:var(--p1); }
+  .sev.s2 { color:var(--p2); } .sev.s3 { color:var(--p3); }
+
+  /* Defect record */
+  .rec { border-top:1px solid var(--faint); padding:1.5rem 2.75rem 1.7rem; }
+  .rec:first-of-type { border-top:0; }
+  @media (max-width:44rem) { .rec { padding:1.2rem 1.1rem 1.3rem; } }
+  .rec .hd { display:flex; align-items:baseline; gap:0.85rem; margin-bottom:0.9rem;
+             padding-bottom:0.55rem; border-bottom:1px solid var(--faint); flex-wrap:wrap; }
+  .rec .id { font-family:"JetBrains Mono",monospace; font-size:0.8rem; font-weight:500; }
+  .rec .pill { font-family:"JetBrains Mono",monospace; font-size:0.64rem; letter-spacing:0.09em;
+               padding:0.1rem 0.4rem; border:1px solid currentColor; }
+
+  ol.steps { margin:0; padding-left:1.15rem; }
+  ol.steps li { margin-bottom:0.15rem; }
+  code { font-family:"JetBrains Mono",monospace; font-size:0.88em; }
+
+  figure { margin:0; }
+  figure img { width:100%; display:block; border:1px solid var(--rule); }
+  figcaption { font-size:0.72rem; color:var(--soft); margin-top:0.35rem; }
+  .pair { display:grid; gap:0.85rem; margin-top:1.1rem; }
+  @media (min-width:44rem) { .pair { grid-template-columns:1fr 1fr; } }
+
+  video { width:100%; display:block; border:1px solid var(--rule); background:#000; }
+
+  ul.tight { margin:0; padding-left:1.15rem; font-size:0.88rem; }
+  ul.tight li { margin-bottom:0.22rem; }
+
+  footer { max-width:54rem; margin:0 auto; padding:1.1rem 2.75rem 2.5rem;
+           font-family:"JetBrains Mono",monospace; font-size:0.68rem; color:var(--soft);
+           display:flex; flex-wrap:wrap; gap:0.4rem 1.5rem; justify-content:space-between; }
+
+  /* Revision 4 additions */
+  .kind { font-family:"JetBrains Mono",monospace; font-size:0.64rem; letter-spacing:0.09em;
+          padding:0.1rem 0.4rem; border:1px solid var(--rule); color:var(--soft); }
+  .jump { font-family:"JetBrains Mono",monospace; font-size:0.72rem; background:none; cursor:pointer;
+          color:var(--p2); border:1px solid var(--rule); padding:0.12rem 0.45rem; margin:0.15rem 0.3rem 0 0; }
+  .jump:hover { border-color:var(--p2); }
+  figure.wide { margin-top:1.1rem; }
+  .note { font-size:0.82rem; color:var(--soft); margin-top:0.8rem; }
+  .vid { margin-top:1.4rem; }
+  .vid h3 { margin-bottom:0.45rem; }
+  .ok { color:var(--p2); }
+  td.mono, td.sev { white-space:nowrap; }
+  .brand { display:flex; align-items:center; gap:0.8rem; margin-top:1rem; }
+  .brand img { width:56px; height:56px; border-radius:12px; display:block; }
+  .brand-name { font-family:"Public Sans",sans-serif; font-weight:600; font-size:1.15rem; line-height:1.1; }
+  .brand-sub { font-family:"JetBrains Mono",monospace; font-size:0.78rem; color:var(--soft); }
+  .byline { margin-top:0.45rem; font-size:0.85rem; color:var(--soft); }
+  dl.fnote { display:grid; grid-template-columns:7.5rem 1fr; gap:0.2rem 0.9rem; font-size:0.78rem;
+             margin:0.45rem 0 0; padding:0.6rem 0.75rem; background:var(--band); border-left:3px solid var(--rule); text-align:left; }
+  dl.fnote dt { color:var(--soft); font-size:0.66rem; letter-spacing:0.07em; text-transform:uppercase; padding-top:0.1rem; }
+  dl.fnote dd { margin:0; }
+  @media (max-width:34rem) { dl.fnote { grid-template-columns:1fr; } }
+  .langlink { font-family:"JetBrains Mono",monospace; font-size:0.72rem; color:var(--p2); border:1px solid var(--rule);
+              padding:0.12rem 0.5rem; margin-left:0.6rem; text-decoration:none; letter-spacing:0; text-transform:none; }
+  .langlink:hover { border-color:var(--p2); }
+  .walk { margin-top:1.2rem; }
+  .reveal { opacity:0; transform:translateY(14px); transition:opacity .6s ease, transform .6s ease; }
+  .reveal.in { opacity:1; transform:none; }
+  @media (prefers-reduced-motion: reduce) { .reveal { opacity:1; transform:none; transition:none; } }
+  figure.tall { max-width:24rem; margin-left:auto; margin-right:auto; }
+  figure.mid { max-width:34rem; margin-left:auto; margin-right:auto; }
+</style>
+
+</head>
+<body>
+<div class="doc">
+
+  <div class="pad masthead">
+    <div class="line">
+      <span>Laporan cacat QA-2609-11</span>
+      <span>Revisi 4 <a class="langlink" href="/" hreflang="en" lang="en">English</a></span>
+    </div>
+    <div class="brand">
+      <img src="ev/sana-icon.png" alt="Sana logo" width="56" height="56">
+      <div>
+        <div class="brand-name">Sana</div>
+        <div class="brand-sub">sana.run</div>
+      </div>
+    </div>
+    <h1>Laporan Cacat Trading Spot dan Perps sana.run</h1>
+    <p class="byline">Disusun untuk Sana (sana.run) oleh <strong>nayrbryanGaming</strong>. Laporan QA independen; bukan publikasi resmi Sana.</p>
+    <p class="classline">RAHASIA. Terbatas untuk keperluan penugasan. Memuat cacat yang belum diperbaiki.</p>
+    <figure class="walk">
+      <video controls muted preload="metadata" playsinline poster="ev/walkthrough-poster.jpg"><source src="walkthrough.mp4" type="video/mp4">walkthrough.mp4</video>
+      <figcaption>Video panduan (95 detik, tanpa suara, dengan teks bahasa Inggris dan Indonesia): tur laporan ini dari awal sampai akhir.</figcaption>
+    </figure>
+  </div>
+
+  <section class="pad">
+    <h2><span class="num">1</span>Pengendalian dokumen</h2>
+    <dl class="fields">
+      <dt>ID Laporan</dt><dd class="mono">QA-2609-11</dd>
+      <dt>Revisi</dt><dd class="mono">4, 14 September 2026</dd>
+      <dt>Menggantikan</dt><dd class="mono">Revisi 3, 11 September 2026</dd>
+      <dt>Disusun untuk</dt><dd>Sana (sana.run)</dd>
+      <dt>Penyusun</dt><dd>nayrbryanGaming</dd>
+      <dt>Klasifikasi</dt><dd>Rahasia, internal untuk penugasan</dd>
+      <dt>Distribusi</dt><dd>Kepala engineering, kepala QA, kepala produk</dd>
+      <dt>Status</dt><dd>Diterbitkan untuk ditindaklanjuti. Seluruh cacat masih terbuka.</dd>
+      <dt>Ringkasan perubahan</dt><dd>Ditambahkan 9 cacat (A-05 sampai A-13) dan 11 usulan perbaikan dari 5 rekaman tanggal 13 September 2026 serta tangkapan layar tanggal 14 September 2026. A-01 dan A-02 diperbarui dengan bukti baru. Perps kini termasuk dalam cakupan. Seluruh rekaman tanpa suara.</dd>
+    </dl>
+  </section>
+
+  <section class="pad">
+    <h2><span class="num">2</span>Cakupan, lingkungan, dan metode</h2>
+    <dl class="fields">
+      <dt>Komponen</dt><dd>Panel order spot (rute Jupiter dan Relay). Daftar pasar perps, tiket order, posisi, kolateral, registrasi trader, grafik.</dd>
+      <dt>Sesi</dt><dd class="mono">8 Sep 2026 09:15 (Rec0). 13 Sep 2026 20:48 sampai 22:28 (Rec1 sampai Rec5, dua tangkapan layar). 14 Sep 2026 00:46 (dua tangkapan layar). Waktu menurut jam perangkat.</dd>
+      <dt>Perangkat</dt><dd>Tablet Android, orientasi lanskap. Microsoft Edge untuk Android. Perekam layar bawaan perangkat.</dd>
+      <dt>Wallet</dt><dd>Wallet sesi tertanam <code>EZTf...E74P</code> sebagaimana ditampilkan pada header. Tidak ada permintaan tanda tangan per transaksi.</dd>
+      <dt>Dana</dt><dd>Dana riil, nilai nosional kecil. USDC spot 13.8 menjadi 1.8. Kolateral perps USD 10. Posisi sebesar 0.01 SOL.</dd>
+      <dt>Metode</dt><dd>Pengujian eksploratif manual dengan perekaman layar. Rekaman diambil sampelnya pada 0.5 fps untuk triase, kemudian pada 4 fps dan resolusi penuh di sekitar setiap temuan. Setiap klaim di bawah ini dikaitkan dengan timecode.</dd>
+      <dt>Transaksi</dt><dd class="mono">Long 0.01 SOL 49hj...jsGR. Short 0.01 SOL 5h9V...jjLG. Short 0.01 SOL G78X...WzHQ. Dipotong sebagaimana ditampilkan pada toast aplikasi.</dd>
+      <dt>Tidak diuji</dt><dd>Lihat bagian 10.</dd>
+    </dl>
+  </section>
+
+  <section class="pad">
+    <h2><span class="num">3</span>Tingkat keparahan dan klasifikasi</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Tingkat</th><th>Definisi</th></tr></thead>
+        <tbody>
+          <tr><td class="sev s0">P0</td><td>Kehilangan dana, akses tanpa otorisasi, pemotongan yang salah, penarikan yang gagal, order riil ganda, atau alur trading inti sama sekali tidak tersedia.</td></tr>
+          <tr><td class="sev s1">P1</td><td>Incorrect orders, positions, balances, P&amp;L, prices, market status or settlement results; frequent crashes or freezes affecting core flows.</td></tr>
+          <tr><td class="sev s2">P2</td><td>Masalah fungsional atau kinerja yang memengaruhi penggunaan tetapi memiliki solusi sementara yang wajar, seperti memuat ulang atau mencoba kembali.</td></tr>
+          <tr><td class="sev s3">P3</td><td>Masalah teks, terjemahan, tata letak, tampilan, atau kompatibilitas yang tidak memengaruhi trading inti.</td></tr>
+          <tr><td class="mono">IMP</td><td>Usulan perbaikan. Bukan cacat. Hanya memenuhi syarat apabila diterima ke dalam roadmap produk. Dicatat terpisah dari cacat.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Tingkat keparahan diusulkan oleh QA. Penetapan akhir berada pada tim produk.</p>
+  </section>
+
+  <section class="pad">
+    <h2><span class="num">4</span>Daftar temuan</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>ID</th><th>Sev</th><th>Area</th><th>Ringkasan</th><th>Bukti</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">A-05</td><td class="sev s1">P1</td><td>Perps</td><td>Order yang terisi dilaporkan sebagai Order Failed; satu konfirmasi menghasilkan satu keberhasilan dan satu kegagalan</td><td class="mono">Rec5 01:33-01:45</td></tr>
+          <tr><td class="mono">A-01</td><td class="sev s1">P1</td><td>Spot</td><td>Tombol beli tetap aktif setelah peringatan saldo tidak mencukupi (3 dari 3, hanya rute Jupiter)</td><td class="mono">Rec0 00:00, Rec1 00:08</td></tr>
+          <tr><td class="mono">A-06</td><td class="sev s1">P1</td><td>Perps</td><td>Konfirmasi order dan toast menampilkan 0.0120 SOL; posisi terisi 0.01 SOL</td><td class="mono">Rec5 01:04-01:12</td></tr>
+          <tr><td class="mono">A-02</td><td class="sev s2">P2</td><td>Spot</td><td>Max memilih seluruh saldo native; galat mentah Jupiter quote 400; tidak ada alasan yang ditampilkan</td><td class="mono">Rec0 00:58, Rec1 01:04</td></tr>
+          <tr><td class="mono">A-03</td><td class="sev s2">P2</td><td>Spot</td><td>Layanan quote tidak mengembalikan data sementara grafik harga terus diperbarui</td><td class="mono">Rec0 01:14-01:22</td></tr>
+          <tr><td class="mono">A-13</td><td class="sev s2">P2</td><td>Perps</td><td>Trader state 429 menampilkan akun sebagai belum terverifikasi dengan saldo dan posisi nol; tidak ada percobaan ulang otomatis</td><td class="mono">Tangkapan layar 14 Sep 00:46</td></tr>
+          <tr><td class="mono">A-07</td><td class="sev s2">P2</td><td>Perps</td><td>Kegagalan pengambilan daftar pasar ditampilkan sebagai kategori kosong; kolom header kosong</td><td class="mono">Rec2 01:56-02:04</td></tr>
+          <tr><td class="mono">A-08</td><td class="sev s2">P2</td><td>Perps</td><td>Registrasi trader tertahan pada Registering hingga halaman dimuat ulang</td><td class="mono">Rec3 00:36-01:02, Rec5 00:19</td></tr>
+          <tr><td class="mono">A-09</td><td class="sev s2">P2</td><td>Perps</td><td>Setoran kolateral pertama gagal: Quote not ready to sign</td><td class="mono">Rec5 00:28</td></tr>
+          <tr><td class="mono">A-10</td><td class="sev s2">P2</td><td>Perps</td><td>Tab posisi bertuliskan Positions (1) sementara daftar menampilkan No positions</td><td class="mono">Tangkapan layar 22:14, 22:28</td></tr>
+          <tr><td class="mono">A-11</td><td class="sev s2">P2</td><td>Perps</td><td>Grafik perps tidak memiliki pemilih maupun label interval candle</td><td class="mono">Rec4 00:05, 00:17</td></tr>
+          <tr><td class="mono">A-04</td><td class="sev s3">P3</td><td>Spot</td><td>Tampilan saldo tertinggal sekitar 8 s dari konfirmasi swap</td><td class="mono">Rec0 00:22-00:30</td></tr>
+          <tr><td class="mono">A-12</td><td class="sev s3">P3</td><td>Spot</td><td>Jumlah jual kosong memunculkan No SOL balance to sell padahal saldo 0.063742 SOL</td><td class="mono">Rec1 01:00</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="scroll" style="margin-top:1.1rem">
+      <table>
+        <thead><tr><th>ID</th><th>Jenis</th><th>Usulan</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">I-01</td><td class="mono">IMP</td><td>Take profit dan stop loss pada tiket order, termasuk take profit parsial bertahap</td></tr>
+          <tr><td class="mono">I-02</td><td class="mono">IMP</td><td>Garis entry, likuidasi, dan order tertunda pada grafik</td></tr>
+          <tr><td class="mono">I-03</td><td class="mono">IMP</td><td>Dialog konfirmasi menyebutkan posisi yang dihasilkan sebelum order pada sisi berlawanan</td></tr>
+          <tr><td class="mono">I-04</td><td class="mono">IMP</td><td>Target latensi eksekusi untuk trading interval pendek</td></tr>
+          <tr><td class="mono">I-05</td><td class="mono">IMP</td><td>Order book: bar kedalaman kumulatif dan satuan pada kolom ukuran</td></tr>
+          <tr><td class="mono">I-06</td><td class="mono">IMP</td><td>Panel kolateral menjelaskan apa yang dijamin oleh kolateral dan berapa yang digunakan setiap posisi</td></tr>
+          <tr><td class="mono">I-07</td><td class="mono">IMP</td><td>Lencana ISO menjelaskan alasan suatu pasar hanya mendukung isolated</td></tr>
+          <tr><td class="mono">I-08</td><td class="mono">IMP</td><td>Langkah Register menjelaskan akun trader on-chain beserta biaya SOL-nya sebelum pengguna mengetuk</td></tr>
+          <tr><td class="mono">I-09</td><td class="mono">IMP</td><td>Membedakan label transaksi seluruh pasar dan transaksi pribadi</td></tr>
+          <tr><td class="mono">I-10</td><td class="mono">IMP</td><td>Grafik layar penuh dengan indikator dan alat gambar</td></tr>
+          <tr><td class="mono">I-11</td><td class="mono">IMP</td><td>Mengarahkan pemegang aset non-USDC ke Swap dan setoran dari tiket perps</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="pad" style="padding-bottom:0.6rem"><h2><span class="num">5</span>Catatan cacat</h2></div>
+
+    <div class="rec">
+      <div class="hd">
+        <span class="id">A-05</span>
+        <span class="pill sev s1">P1 BERAT</span>
+        <span class="kind">KANDIDAT P0</span>
+        <h3 style="flex:1 1 100%">Order yang terisi dilaporkan sebagai Order Failed; satu konfirmasi menghasilkan satu keberhasilan dan satu kegagalan</h3>
+      </div>
+      <dl class="fields">
+        <dt>Komponen</dt><dd>Tiket order perps, dialog konfirmasi, toast status order</dd>
+        <dt>Prasyarat</dt><dd>Trader Phoenix terdaftar. Cross margin, kolateral USD 10. Posisi long SOL-PERP terbuka sebesar 0.01 SOL.</dd>
+        <dt>Langkah</dt>
+        <dd>
+          <ol class="steps">
+            <li>Buka SOL-PERP. Pilih Short, Market.</li>
+            <li>Masukkan ukuran 1.2 USD (0.012 SOL), sama dengan order yang membuka posisi long.</li>
+            <li>Ketuk Short SOL, lalu ketuk Place Short satu kali.</li>
+            <li>Amati area toast dan tab Positions selama 10 s.</li>
+          </ol>
+        </dd>
+        <dt>Hasil yang diharapkan</dt><dd>Satu pengiriman, satu status. Toast keberhasilan beserta transaksinya, dan tabel posisi yang sesuai dengannya.</dd>
+        <dt>Hasil aktual</dt><dd>Place Short diketuk satu kali pada 01:34.8. Toast Market Order Placed untuk Short 0.0120 SOL dengan transaksi <code>5h9V...jjLG</code> pada 01:35.7. Pada 01:36.0 toast Order Failed untuk order yang sama menumpuk di atasnya dan tetap tampil sendiri di layar hingga 01:44.75, bertuliskan <code>Phoenix trader state 429</code>. Posisi long tertutup: Positions (1) berubah menjadi Positions (0). Pengguna, yang membaca pesan kegagalan tersebut, menaikkan ukuran menjadi 1.3 USD pada 02:04 dan membuka posisi short baru yang tidak diinginkan sebesar 0.01 SOL (<code>G78X...WzHQ</code>).</dd>
+        <dt>Frekuensi</dt><dd>1 dari 1 order sisi berlawanan yang diamati. Kode 429 mengindikasikan ketergantungan pada waktu.</dd>
+        <dt>Akar penyebab</dt><dd>Hipotesis A: handler konfirmasi mengirim order dua kali, misalnya handler klik ditambah form submit, atau effect yang berjalan ulang. Permintaan kedua ditolak dengan HTTP 429. Hipotesis B: pembaruan trader state setelah order terisi terkena rate limit, dan setiap galat dalam rangkaian tersebut dipetakan menjadi Order Failed untuk order yang sama. Kedua hipotesis konsisten dengan keberhasilan dan kegagalan yang tiba berselang 0.3 s. A-13 menunjukkan 429 yang sama pada pembacaan trader state keesokan harinya, yang mendukung hipotesis B sebagai setidaknya sebagian penyebab.</dd>
+        <dt>Risiko</dt><dd>Menurut hipotesis A, satu-satunya hal yang mencegah order riil ganda adalah rate limit; tanpanya dampaknya memenuhi kriteria P0. Menurut hipotesis B, platform memberi tahu pengguna bahwa order yang terisi telah gagal, sehingga mendorong percobaan ulang dan posisi yang tidak diinginkan, sebagaimana terjadi dalam kasus ini.</dd>
+        <dt>Rekomendasi</dt><dd>1. Buat client order ID saat dialog dibuka; kirimkan bersama order dan tolak penggunaan ulang di sisi server. 2. Nonaktifkan tombol konfirmasi sejak ketukan pertama hingga status final. 3. Kaitkan toast dengan client order ID agar peristiwa selanjutnya tidak dapat menimpa hasil pengisian. 4. Pisahkan galat order dari galat pembaruan data; pembaruan yang gagal harus bertuliskan "Filled. Refreshing positions" dan dicoba ulang dengan backoff saat terjadi 429. 5. Jadikan tanda tangan transaksi sebagai sumber kebenaran untuk status.</dd>
+        <dt>Verifikasi yang diperlukan</dt><dd>Trade History untuk pukul 22:10 sampai 22:11 waktu perangkat. Adanya dua pengiriman untuk Short 0.012 akan mengonfirmasi hipotesis A dan menaikkan tingkat keparahan menjadi P0.</dd>
+      </dl>
+      <figure class="wide clip">
+        <video controls muted preload="metadata" playsinline><source src="clips/a05.mp4" type="video/mp4">clips/a05.mp4</video>
+        <figcaption>Klip sorotan untuk A-05, dipotong pada momen-momen kunci dan tanpa suara. Segmen: Rec5 01:28-02:16. Rekaman lengkap tanpa potongan tersedia di bagian 9.</figcaption>
+      </figure>
+      <figure class="wide tall">
+        <img src="ev/a05-1-long-placed.jpg" alt="Order ticket with Market Order Placed toast for a long">
+        <figcaption>Gambar A-05.1. Rec5 01:12. Long 0.0120 SOL ditempatkan, transaksi 49hj...jsGR.</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Titik awal rangkaian A-05. Notifikasi Market Order Placed mengonfirmasi posisi long pada SOL-PERP dengan Size 0.0120 ($1.20), harga $100.34, dan transaksi 49hj...jsGR. Setelah order ini, akun memiliki satu posisi long terbuka.</dd><dt>Tingkat keparahan</dt><dd>Konteks untuk A-05. Gambar ini bukan cacat dengan sendirinya; gambar ini mencatat kondisi sebelum cacat terjadi.</dd><dt>Penyebab</dt><dd>Tidak ada cacat pada langkah ini, selain pembulatan ukuran yang telah diuraikan pada A-06.</dd><dt>Potensi dampak</dt><dd>Gambar ini menetapkan bahwa terdapat posisi riil, terbuka, dan menggunakan leverage sebelum order short. Tanpa kondisi awal ini, hilangnya posisi setelahnya tidak dapat dibuktikan.</dd><dt>Solusi</dt><dd>Tidak ada tindakan untuk gambar ini.</dd><dt>Bukti</dt><dd>Frame diambil dari rekaman Rec5 pada 01:12 (file rec-5-perps-orders.mp4, lengkap dan tanpa suara). Buka rekaman pada bagian Rekaman bukti dan putar mulai beberapa detik sebelum waktu tersebut untuk melihat rangkaian lengkap di sekitar frame.</dd><dt>Langkah reproduksi</dt><dd>1. Buka SOL-PERP. Pilih Short, Market. 2. Masukkan ukuran 1.2 USD (0.012 SOL), sama dengan order yang membuka posisi long. 3. Ketuk Short SOL, lalu ketuk Place Short satu kali. 4. Amati area toast dan tab Positions selama 10 s.</dd><dt>Masukan untuk tim</dt><dd>Ini adalah temuan terpenting dalam laporan dan perlu diperiksa terlebih dahulu. Periksa riwayat order pukul 22:10 sampai 22:11 untuk memastikan apakah satu atau dua order yang terkirim. Apa pun hasilnya, order yang terisi tidak boleh dilaporkan gagal: kaitkan setiap pesan dengan order masing-masing, kunci tombol konfirmasi hingga hasilnya final, dan pisahkan galat order dari galat pembaruan data.</dd></dl>
+      </figure>
+      <figure class="wide tall">
+        <img src="ev/a05-2-confirm.jpg" alt="Confirmation dialog in submitting state">
+        <figcaption>Gambar A-05.2. Rec5 01:34.8. Dialog konfirmasi, Place Short diketuk satu kali.</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Dialog Confirm Order untuk Short 0.012 SOL pada $100.35. Dialog mencantumkan Estimated Liquidation Price $104.53, Expected Price $100.35, Order Value $1.20, Margin Required $0.05, dan Network Fee $0.00. Tombol Place Short telah diketuk satu kali dan kini bertuliskan Submitting, sehingga tidak dapat diketuk lagi.</dd><dt>Tingkat keparahan</dt><dd>P1, kandidat P0 (A-05). Seluruh rangkaian dinilai P1 karena status order yang salah dan dapat dinaikkan menjadi P0 apabila order ganda terkonfirmasi.</dd><dt>Penyebab</dt><dd>Frame ini membuktikan bahwa pengguna mengonfirmasi order tepat satu kali. Apabila bursa kemudian menerima dua pengiriman untuk order ini, pengiriman kedua dihasilkan oleh aplikasi, misalnya karena handler tombol dan form submit sama-sama terpicu, atau karena effect yang berulang.</dd><dt>Potensi dampak</dt><dd>Apabila aplikasi memang mengirim order dua kali, satu-satunya hal yang mencegah order riil ganda dalam kasus ini adalah rate limit pada bursa. Tanpa batas tersebut, pengguna akan membuka dua posisi dari satu konfirmasi, yang memenuhi definisi P0 untuk order riil ganda.</dd><dt>Solusi</dt><dd>Buat client order ID unik saat dialog dibuka, kirimkan bersama order, dan tolak setiap permintaan kedua dengan ID yang sama di server. Kunci tombol konfirmasi sejak ketukan pertama hingga order mencapai status final.</dd><dt>Bukti</dt><dd>Frame diambil dari rekaman Rec5 pada 01:34.8 (file rec-5-perps-orders.mp4, lengkap dan tanpa suara). Buka rekaman pada bagian Rekaman bukti dan putar mulai beberapa detik sebelum waktu tersebut untuk melihat rangkaian lengkap di sekitar frame.</dd><dt>Langkah reproduksi</dt><dd>1. Buka SOL-PERP. Pilih Short, Market. 2. Masukkan ukuran 1.2 USD (0.012 SOL), sama dengan order yang membuka posisi long. 3. Ketuk Short SOL, lalu ketuk Place Short satu kali. 4. Amati area toast dan tab Positions selama 10 s.</dd><dt>Masukan untuk tim</dt><dd>Ini adalah temuan terpenting dalam laporan dan perlu diperiksa terlebih dahulu. Periksa riwayat order pukul 22:10 sampai 22:11 untuk memastikan apakah satu atau dua order yang terkirim. Apa pun hasilnya, order yang terisi tidak boleh dilaporkan gagal: kaitkan setiap pesan dengan order masing-masing, kunci tombol konfirmasi hingga hasilnya final, dan pisahkan galat order dari galat pembaruan data.</dd></dl>
+      </figure>
+      <figure class="wide tall">
+        <img src="ev/a05-3-stacked.jpg" alt="Success toast with failure toast stacked over it">
+        <figcaption>Gambar A-05.3. Rec5 01:36. Market Order Placed untuk short, dengan Order Failed bertumpuk di atasnya.</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Kurang dari satu detik setelah konfirmasi. Notifikasi hijau Market Order Placed untuk short, Size 0.0120 ($1.20), harga $100.35, transaksi 5h9V...jjLG, terlihat. Notifikasi merah Order Failed untuk order yang sama sudah muncul bergeser di atasnya, sehingga kedua hasil tampil di layar secara bersamaan.</dd><dt>Tingkat keparahan</dt><dd>P1, kandidat P0 (A-05). Satu order menghasilkan dua hasil yang berlawanan dalam waktu sekitar 0.3 detik.</dd><dt>Penyebab</dt><dd>Terdapat dua penjelasan yang sesuai dengan frame ini. Order dikirim dua kali dan permintaan kedua ditolak dengan HTTP 429, atau order berhasil tetapi pembaruan status akun yang menyusulnya terkena rate limit, dan galat pembaruan tersebut dilaporkan sebagai kegagalan order.</dd><dt>Potensi dampak</dt><dd>Pengguna diberi tahu bahwa order yang sebenarnya terisi telah gagal. Informasi yang keliru ini secara langsung menyebabkan kesalahan berikutnya dalam rekaman, yaitu posisi short baru yang tidak diinginkan dibuka untuk mengulang order.</dd><dt>Solusi</dt><dd>Kaitkan setiap notifikasi dengan client order ID-nya agar peristiwa selanjutnya tidak dapat menggantikan hasil sebelumnya, dan gunakan tanda tangan transaksi on-chain sebagai sumber kebenaran akhir mengenai berhasil atau tidaknya suatu order.</dd><dt>Bukti</dt><dd>Frame diambil dari rekaman Rec5 pada 01:36 (file rec-5-perps-orders.mp4, lengkap dan tanpa suara). Buka rekaman pada bagian Rekaman bukti dan putar mulai beberapa detik sebelum waktu tersebut untuk melihat rangkaian lengkap di sekitar frame.</dd><dt>Langkah reproduksi</dt><dd>1. Buka SOL-PERP. Pilih Short, Market. 2. Masukkan ukuran 1.2 USD (0.012 SOL), sama dengan order yang membuka posisi long. 3. Ketuk Short SOL, lalu ketuk Place Short satu kali. 4. Amati area toast dan tab Positions selama 10 s.</dd><dt>Masukan untuk tim</dt><dd>Ini adalah temuan terpenting dalam laporan dan perlu diperiksa terlebih dahulu. Periksa riwayat order pukul 22:10 sampai 22:11 untuk memastikan apakah satu atau dua order yang terkirim. Apa pun hasilnya, order yang terisi tidak boleh dilaporkan gagal: kaitkan setiap pesan dengan order masing-masing, kunci tombol konfirmasi hingga hasilnya final, dan pisahkan galat order dari galat pembaruan data.</dd></dl>
+      </figure>
+      <figure class="wide tall">
+        <img src="ev/a05-4-429.jpg" alt="Order Failed toast reading Phoenix trader state 429">
+        <figcaption>Gambar A-05.4. Rec5 01:44. Hanya kegagalan yang tersisa: Phoenix trader state 429.</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Delapan detik kemudian notifikasi hijau telah hilang dan hanya notifikasi merah Order Failed yang tersisa. Notifikasi tersebut masih mencantumkan short, Size 0.0120 ($1.20), harga $100.35, dan baris alasannya bertuliskan Phoenix trader state 429.</dd><dt>Tingkat keparahan</dt><dd>P1, kandidat P0 (A-05). Inilah pesan yang akhirnya diterima pengguna.</dd><dt>Penyebab</dt><dd>HTTP 429 berarti Too Many Requests. Permintaan yang gagal adalah pencarian Phoenix trader state, yang membaca akun setelah order. Antarmuka melaporkan kegagalan pencarian akun seolah-olah order itu sendiri yang gagal.</dd><dt>Potensi dampak</dt><dd>Berdasarkan pesan ini, penguji menaikkan ukuran menjadi 1.3 USD pada 02:04 dan menempatkan short lainnya, yang membuka posisi baru yang tidak dimaksudkan untuk dipegang. Pengguna pada umumnya akan melakukan hal yang sama.</dd><dt>Solusi</dt><dd>Pisahkan galat order dari galat pembaruan data. Apabila order terisi tetapi pembaruan gagal, tampilkan Filled, refreshing positions, dan coba ulang pembaruan secara otomatis dengan jeda yang meningkat serta dengan memperhatikan header Retry-After.</dd><dt>Bukti</dt><dd>Frame diambil dari rekaman Rec5 pada 01:44 (file rec-5-perps-orders.mp4, lengkap dan tanpa suara). Buka rekaman pada bagian Rekaman bukti dan putar mulai beberapa detik sebelum waktu tersebut untuk melihat rangkaian lengkap di sekitar frame.</dd><dt>Langkah reproduksi</dt><dd>1. Buka SOL-PERP. Pilih Short, Market. 2. Masukkan ukuran 1.2 USD (0.012 SOL), sama dengan order yang membuka posisi long. 3. Ketuk Short SOL, lalu ketuk Place Short satu kali. 4. Amati area toast dan tab Positions selama 10 s.</dd><dt>Masukan untuk tim</dt><dd>Ini adalah temuan terpenting dalam laporan dan perlu diperiksa terlebih dahulu. Periksa riwayat order pukul 22:10 sampai 22:11 untuk memastikan apakah satu atau dua order yang terkirim. Apa pun hasilnya, order yang terisi tidak boleh dilaporkan gagal: kaitkan setiap pesan dengan order masing-masing, kunci tombol konfirmasi hingga hasilnya final, dan pisahkan galat order dari galat pembaruan data.</dd></dl>
+      </figure>
+      <figure class="wide">
+        <img src="ev/a05-5-pos-before.jpg" alt="Positions table with one SOL-PERP long">
+        <figcaption>Gambar A-05.5. Rec5 01:12. Positions (1): SOL-PERP Long 0.01 SOL.</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Tabel Positions sebelum order short. Tabel bertuliskan Positions (1) dengan satu baris: SOL-PERP Long, Size 0.01 SOL, Position Value $1.00, Entry $100.36, Mark $100.34, Liq $95.36.</dd><dt>Tingkat keparahan</dt><dd>Konteks untuk A-05. Gambar ini mencatat kondisi akun sebelum cacat terjadi.</dd><dt>Penyebab</dt><dd>Tidak ada cacat pada langkah ini.</dd><dt>Potensi dampak</dt><dd>Gambar ini menunjukkan adanya posisi riil terbuka yang dapat terdampak oleh order berikutnya. Harga likuidasi $95.36 juga menunjukkan bahwa posisi tersebut menggunakan leverage.</dd><dt>Solusi</dt><dd>Tidak ada tindakan untuk gambar ini.</dd><dt>Bukti</dt><dd>Frame diambil dari rekaman Rec5 pada 01:12 (file rec-5-perps-orders.mp4, lengkap dan tanpa suara). Buka rekaman pada bagian Rekaman bukti dan putar mulai beberapa detik sebelum waktu tersebut untuk melihat rangkaian lengkap di sekitar frame.</dd><dt>Langkah reproduksi</dt><dd>1. Buka SOL-PERP. Pilih Short, Market. 2. Masukkan ukuran 1.2 USD (0.012 SOL), sama dengan order yang membuka posisi long. 3. Ketuk Short SOL, lalu ketuk Place Short satu kali. 4. Amati area toast dan tab Positions selama 10 s.</dd><dt>Masukan untuk tim</dt><dd>Ini adalah temuan terpenting dalam laporan dan perlu diperiksa terlebih dahulu. Periksa riwayat order pukul 22:10 sampai 22:11 untuk memastikan apakah satu atau dua order yang terkirim. Apa pun hasilnya, order yang terisi tidak boleh dilaporkan gagal: kaitkan setiap pesan dengan order masing-masing, kunci tombol konfirmasi hingga hasilnya final, dan pisahkan galat order dari galat pembaruan data.</dd></dl>
+      </figure>
+      <figure class="wide">
+        <img src="ev/a05-6-pos-after.jpg" alt="Positions table reading No positions">
+        <figcaption>Gambar A-05.6. Rec5 01:36. Positions (0): posisi long telah tertutup.</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Tabel Positions tepat setelah notifikasi Order Failed. Tab kini bertuliskan Positions (0) dan tabel menampilkan No positions. Posisi long dari gambar A-05.5 telah hilang.</dd><dt>Tingkat keparahan</dt><dd>P1 (A-05). Gambar ini membuktikan bahwa order yang dilaporkan gagal sebenarnya mengubah akun.</dd><dt>Penyebab</dt><dd>Order short benar-benar terisi. Pada bursa ini posisi di-netting per pasar, sehingga short dengan ukuran yang sama dengan long mengurangi posisi menjadi nol. Karena pembulatan pada A-06, kedua order tepat sebesar 0.01 SOL, sehingga netting terjadi sepenuhnya.</dd><dt>Potensi dampak</dt><dd>Satu-satunya pesan di layar, Order Failed, bertentangan dengan apa yang sebenarnya terjadi pada akun. Pengguna tidak dapat memercayai notifikasi maupun pemahaman mereka sendiri atas posisinya, dan dapat mengalami kerugian karena bertindak berdasarkan informasi yang salah.</dd><dt>Solusi</dt><dd>Tampilkan posisi yang dihasilkan pada setiap pesan hasil order, misalnya Short filled, position closed, dan sertakan tautan transaksi agar pengguna dapat memverifikasinya secara mandiri.</dd><dt>Bukti</dt><dd>Frame diambil dari rekaman Rec5 pada 01:36 (file rec-5-perps-orders.mp4, lengkap dan tanpa suara). Buka rekaman pada bagian Rekaman bukti dan putar mulai beberapa detik sebelum waktu tersebut untuk melihat rangkaian lengkap di sekitar frame.</dd><dt>Langkah reproduksi</dt><dd>1. Buka SOL-PERP. Pilih Short, Market. 2. Masukkan ukuran 1.2 USD (0.012 SOL), sama dengan order yang membuka posisi long. 3. Ketuk Short SOL, lalu ketuk Place Short satu kali. 4. Amati area toast dan tab Positions selama 10 s.</dd><dt>Masukan untuk tim</dt><dd>Ini adalah temuan terpenting dalam laporan dan perlu diperiksa terlebih dahulu. Periksa riwayat order pukul 22:10 sampai 22:11 untuk memastikan apakah satu atau dua order yang terkirim. Apa pun hasilnya, order yang terisi tidak boleh dilaporkan gagal: kaitkan setiap pesan dengan order masing-masing, kunci tombol konfirmasi hingga hasilnya final, dan pisahkan galat order dari galat pembaruan data.</dd></dl>
+      </figure>
+      <button class="jump" data-v="rec5" data-t="90">Putar Rec5 pada 01:30</button>
+      <button class="jump" data-v="rec5" data-t="122">Putar Rec5 pada 02:02</button>
+    </div>
+
+    <div class="rec">
+      <div class="hd">
+        <span class="id">A-01</span>
+        <span class="pill sev s1">P1 BERAT</span>
+        <span class="kind">DIPERBARUI REV 4</span>
+        <h3 style="flex:1 1 100%">Tombol Buy tetap aktif setelah muncul peringatan saldo tidak mencukupi</h3>
+      </div>
+      <dl class="fields">
+        <dt>Komponen</dt><dd>Panel order spot, tab Buy, kontrol aksi utama, rute Solana (Jupiter)</dd>
+        <dt>Prasyarat</dt><dd>Dompet terhubung. Saldo USDC lebih kecil daripada nilai nosional yang dimasukkan.</dd>
+        <dt>Langkah</dt>
+        <dd>
+          <ol class="steps">
+            <li>Buka pasangan spot Solana, misalnya Tulip.</li>
+            <li>Pilih tab Buy.</li>
+            <li>Masukkan jumlah yang melebihi saldo USDC, atau ketuk preset 50 USD.</li>
+            <li>Amati baris peringatan dan kontrol aksi utama.</li>
+            <li>Ulangi pada pasangan Arbitrum yang dirutekan melalui Relay.</li>
+          </ol>
+        </dd>
+        <dt>Hasil yang diharapkan</dt><dd>Aksi utama dinonaktifkan selama peringatan kekurangan saldo ditampilkan, pada setiap rute.</dd>
+        <dt>Hasil aktual</dt><dd>Rute Jupiter: peringatan <code>Not enough USDC - you have 13.8 USDC</code>; Buy Tulip tampil dalam keadaan aktif. Rute Relay (ETH di Arbitrum): peringatan <code>Not enough USD - largest origin is 13.8 on Solana USDC</code>; Buy ETH dinonaktifkan dengan benar.</dd>
+        <dt>Frekuensi</dt><dd>3 dari 3 pada rute Jupiter: USDC 0 (Rec0 00:00), USDC 13.8 (Rec0 01:30), USDC 13.8 pada Tulip (Rec1 00:00 hingga 00:12). Juga teramati pada USDT (Rec4 00:04). 0 dari 1 pada rute Relay.</dd>
+        <dt>Akar penyebab</dt><dd>Hipotesis, dipersempit pada rev 4: jalur Relay mengaitkan pemeriksaan kekurangan saldo dengan status nonaktif; jalur Jupiter hanya mengaitkannya dengan teks peringatan. Pola perbaikannya sudah tersedia di dalam basis kode.</dd>
+        <dt>Risiko</dt><dd>Pengiriman order yang tidak dapat didanai. Apabila terjadi partial fill atau transaksi yang hanya memotong biaya, hasilnya memenuhi definisi P0 tentang pemotongan saldo yang keliru.</dd>
+        <dt>Rekomendasi</dt><dd>Pindahkan predikat kekurangan saldo ke dalam <code>canSubmit</code> yang tidak bergantung pada rute dan digunakan oleh kedua jalur. Tambahkan asersi regresi bahwa kontrol dinonaktifkan setiap kali node peringatan terpasang, diparameterkan berdasarkan rute.</dd>
+      </dl>
+      <figure class="wide clip">
+        <video controls muted preload="metadata" playsinline><source src="clips/a01.mp4" type="video/mp4">clips/a01.mp4</video>
+        <figcaption>Klip sorotan untuk A-01, dipotong pada momen-momen kunci dan tanpa suara. Segmen: Rec0 00:00-00:06, Rec1 00:00-00:14, Rec1 00:52-01:00. Rekaman lengkap tanpa potongan tersedia di bagian 9.</figcaption>
+      </figure>
+        <figure class="wide">
+          <img src="f_001.jpg" alt="Order panel, zero USDC balance, 50 USDC entered, warning displayed, Buy control enabled">
+          <figcaption>Gambar A-01.1. Rec0 00:00. USDC 0, dimasukkan 50. Peringatan muncul, kontrol aktif.</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Tab Buy pada panel order spot dengan saldo USDC 0 dan jumlah 50 USDC yang dimasukkan. Tepat di bawah jumlah, panel menampilkan peringatan berwarna merah, Not enough USDC. Meskipun ada peringatan tersebut, tombol Buy di bawahnya tetap berwarna terang penuh, sama seperti ketika order didanai sepenuhnya, dan tetap merespons ketukan.</dd><dt>Tingkat keparahan</dt><dd>P1 (A-01). Cacat ini menyangkut kontrol order yang memungkinkan order yang keliru dikirim, sehingga termasuk kategori P1: order atau saldo yang keliru. Cacat ini bukan P0 karena tidak teramati adanya pemotongan saldo dalam sesi ini.</dd><dt>Penyebab</dt><dd>Panel jelas menghitung kekurangan saldo, karena menampilkan teks peringatan. Hasil perhitungan itu hanya digunakan untuk menampilkan peringatan. Status nonaktif tombol Buy diturunkan dari kumpulan kondisi yang berbeda, seperti jumlah yang tidak kosong dan kuotasi yang sudah dimuat, dan perbandingan saldo tidak termasuk dalam kumpulan tersebut.</dd><dt>Potensi dampak</dt><dd>Pengguna dapat menekan Buy untuk order yang tidak dapat didanai oleh dompetnya. Dalam kasus terbaik, transaksi gagal di on-chain dan pengguna kehilangan waktu serta kepercayaan. Dalam kasus yang lebih buruk, terjadi partial fill atau transaksi yang hanya memotong biaya, yang merupakan pemotongan saldo keliru dan memenuhi definisi P0. Peringatan di samping tombol yang tetap aktif juga terbaca sebagai saran, bukan pemblokiran, sehingga pengguna terbiasa mengabaikannya.</dd><dt>Solusi</dt><dd>Hitung satu nilai canSubmit dari jumlah, saldo, kuotasi, dan status koneksi, lalu kaitkan peringatan dan atribut disabled tombol ke nilai tunggal tersebut. Tambahkan uji regresi yang gagal setiap kali node peringatan terlihat sementara tombol dalam keadaan aktif.</dd><dt>Bukti</dt><dd>Bingkai diambil dari rekaman Rec0 pada 00:00 (file spot-session-full.mp4, lengkap dan tanpa suara). Buka rekaman di bagian Rekaman bukti dan putar mulai beberapa detik sebelum waktu ini untuk melihat urutan lengkap di sekitar bingkai.</dd><dt>Langkah reproduksi</dt><dd>1. Buka pasangan spot Solana, misalnya Tulip. 2. Pilih tab Buy. 3. Masukkan jumlah yang melebihi saldo USDC, atau ketuk preset 50 USD. 4. Amati baris peringatan dan kontrol aksi utama. 5. Ulangi pada pasangan Arbitrum yang dirutekan melalui Relay.</dd><dt>Masukan untuk tim</dt><dd>Perlakukan setiap peringatan yang menyatakan bahwa order tidak dapat didanai sebagai penghentian mutlak, bukan sekadar saran. Rute Relay sudah menerapkannya dengan baik, sehingga cara tercepat dan paling aman adalah menggunakan kembali kode tersebut pada rute Jupiter alih-alih menulis pemeriksaan baru. Setelah perbaikan, jalankan pengujian yang sama pada sedikitnya tiga token serta pada saldo nol dan saldo parsial, karena cacat ini muncul pada semuanya.</dd></dl>
+        </figure>
+      <figure class="wide tall">
+        <img src="ev/a01-2-jupiter.jpg" alt="Buy panel for Tulip with warning and enabled button">
+        <figcaption>Gambar A-01.2. Rec1 00:08. Tulip pada rute Jupiter: peringatan ditampilkan, Buy Tulip aktif.</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Tab Buy untuk token Tulip, yang dirutekan melalui Jupiter. Saldonya 13.8 USDC dan jumlahnya 50 USDC. Panel menampilkan Not enough USDC - you have 13.8 USDC, dan pada saat yang sama tombol Buy Tulip aktif dan dapat diketuk.</dd><dt>Tingkat keparahan</dt><dd>P1 (A-01). Ini adalah reproduksi independen kedua dari cacat yang sama, pada token yang berbeda dan dengan saldo yang tidak nol.</dd><dt>Penyebab</dt><dd>Tidak adanya kaitan yang sama antara pemeriksaan kekurangan saldo dan status tombol. Karena muncul baik dengan saldo nol maupun saldo positif, serta pada dua token yang berbeda, penyebabnya terletak pada jalur order Jupiter yang digunakan bersama, bukan pada token tertentu atau nilai batas tertentu.</dd><dt>Potensi dampak</dt><dd>Hal ini menunjukkan bahwa cacat bersifat sistematis. Setiap pengguna pada pasangan mana pun yang dirutekan melalui Jupiter dan mengetik jumlah melebihi saldonya dapat mengirim order. Dengan demikian, jumlah pengguna yang terdampak tidak terbatas pada dompet kosong.</dd><dt>Solusi</dt><dd>Perbaiki pemeriksaan sekali saja pada komponen order Jupiter bersama agar setiap pasangan mewarisinya, dan sertakan sedikitnya satu kasus saldo nol dan satu kasus saldo parsial dalam uji regresi.</dd><dt>Bukti</dt><dd>Bingkai diambil dari rekaman Rec1 pada 00:08 (file rec-1-spot-max.mp4, lengkap dan tanpa suara). Buka rekaman di bagian Rekaman bukti dan putar mulai beberapa detik sebelum waktu ini untuk melihat urutan lengkap di sekitar bingkai.</dd><dt>Langkah reproduksi</dt><dd>1. Buka pasangan spot Solana, misalnya Tulip. 2. Pilih tab Buy. 3. Masukkan jumlah yang melebihi saldo USDC, atau ketuk preset 50 USD. 4. Amati baris peringatan dan kontrol aksi utama. 5. Ulangi pada pasangan Arbitrum yang dirutekan melalui Relay.</dd><dt>Masukan untuk tim</dt><dd>Perlakukan setiap peringatan yang menyatakan bahwa order tidak dapat didanai sebagai penghentian mutlak, bukan sekadar saran. Rute Relay sudah menerapkannya dengan baik, sehingga cara tercepat dan paling aman adalah menggunakan kembali kode tersebut pada rute Jupiter alih-alih menulis pemeriksaan baru. Setelah perbaikan, jalankan pengujian yang sama pada sedikitnya tiga token serta pada saldo nol dan saldo parsial, karena cacat ini muncul pada semuanya.</dd></dl>
+      </figure>
+      <figure class="wide tall">
+        <img src="ev/a01-3-relay.jpg" alt="Buy panel for ETH with warning and disabled button">
+        <figcaption>Gambar A-01.3. Rec1 00:56. ETH pada rute Relay: peringatan ditampilkan, Buy ETH nonaktif.</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Tab Buy untuk ETH di Arbitrum, yang dirutekan melalui Relay, dengan jumlah 50 USD dan saldo 13.8 USDC yang sama. Panel menjelaskan kekurangan saldo secara rinci, Not enough USD - largest origin is 13.8 on Solana USDC, dan tombol Buy ETH tampak redup serta tidak dapat ditekan.</dd><dt>Tingkat keparahan</dt><dd>Perilaku acuan untuk A-01. Gambar ini menunjukkan perilaku yang benar dan disertakan sebagai pembanding, bukan sebagai cacat.</dd><dt>Penyebab</dt><dd>Jalur Relay sudah mengaitkan pemeriksaan kekurangan saldo dengan status nonaktif tombol. Kedua rute tampaknya diimplementasikan secara terpisah dan hanya salah satunya yang dilengkapi pemeriksaan tersebut.</dd><dt>Potensi dampak</dt><dd>Hal ini membuktikan bahwa perilaku yang diharapkan sudah dirancang dan dibangun di dalam produk. Hal ini menurunkan biaya dan risiko perbaikan A-01, karena tim dapat menyalin pola yang sudah ada alih-alih menciptakan pola baru.</dd><dt>Solusi</dt><dd>Pindahkan logika kekurangan saldo Relay ke dalam helper yang tidak bergantung pada rute dan gunakan pada Jupiter maupun Relay, agar kedua rute tidak lagi berjalan tidak selaras.</dd><dt>Bukti</dt><dd>Bingkai diambil dari rekaman Rec1 pada 00:56 (file rec-1-spot-max.mp4, lengkap dan tanpa suara). Buka rekaman di bagian Rekaman bukti dan putar mulai beberapa detik sebelum waktu ini untuk melihat urutan lengkap di sekitar bingkai.</dd><dt>Langkah reproduksi</dt><dd>1. Buka pasangan spot Solana, misalnya Tulip. 2. Pilih tab Buy. 3. Masukkan jumlah yang melebihi saldo USDC, atau ketuk preset 50 USD. 4. Amati baris peringatan dan kontrol aksi utama. 5. Ulangi pada pasangan Arbitrum yang dirutekan melalui Relay.</dd><dt>Masukan untuk tim</dt><dd>Perlakukan setiap peringatan yang menyatakan bahwa order tidak dapat didanai sebagai penghentian mutlak, bukan sekadar saran. Rute Relay sudah menerapkannya dengan baik, sehingga cara tercepat dan paling aman adalah menggunakan kembali kode tersebut pada rute Jupiter alih-alih menulis pemeriksaan baru. Setelah perbaikan, jalankan pengujian yang sama pada sedikitnya tiga token serta pada saldo nol dan saldo parsial, karena cacat ini muncul pada semuanya.</dd></dl>
+      </figure>
+      <button class="jump" data-v="rec1" data-t="0">Putar Rec1 pada 00:00</button>
+      <button class="jump" data-v="rec1" data-t="50">Putar Rec1 pada 00:50</button>
+    </div>
+
+    <div class="rec">
+      <div class="hd">
+        <span class="id">A-06</span>
+        <span class="pill sev s1">P1 BERAT</span>
+        <h3 style="flex:1 1 100%">Konfirmasi order dan toast menampilkan 0.0120 SOL; posisi terisi 0.01 SOL</h3>
+      </div>
+      <dl class="fields">
+        <dt>Komponen</dt><dd>Konversi ukuran pada tiket order perps, dialog konfirmasi, toast fill</dd>
+        <dt>Prasyarat</dt><dd>Trader terdaftar dengan kolateral. SOL-PERP.</dd>
+        <dt>Langkah</dt>
+        <dd>
+          <ol class="steps">
+            <li>Masukkan ukuran 1.2 USD pada SOL-PERP Long.</li>
+            <li>Baca dialog konfirmasi, lalu ketuk Place Long.</li>
+            <li>Baca toast Market Order Placed.</li>
+            <li>Baca Size dan Position Value pada tab Positions.</li>
+          </ol>
+        </dd>
+        <dt>Hasil yang diharapkan</dt><dd>Dialog menampilkan ukuran yang akan terisi setelah pembulatan lot, dan toast sesuai dengan fill.</dd>
+        <dt>Hasil aktual</dt><dd>Dialog: <code>Long 0.012 SOL at $100.34</code>, nilai order USD 1.20. Toast: <code>Size 0.0120 ($1.20)</code>. Posisi: <code>0.01 SOL</code>, nilai USD 1.00. Short 1.3 USD berikutnya (0.013 SOL) juga terisi sebagai 0.01 SOL.</dd>
+        <dt>Frekuensi</dt><dd>3 dari 3 order dalam Rec5.</dd>
+        <dt>Akar penyebab</dt><dd>Hipotesis: tiket mengonversi USD ke satuan dasar dengan presisi penuh, sedangkan ukuran lot pasar (0.01 SOL) diterapkan di on-chain. UI tidak pernah membaca kembali ukuran lot tersebut.</dd>
+        <dt>Risiko</dt><dd>Ukuran order dilaporkan keliru hingga 20 persen pada nilai nosional ini, dan pembulatannya tidak terlihat. Hal ini juga menjelaskan mengapa short 0.012 menutup long secara tepat pada A-05: keduanya sebenarnya 0.01.</dd>
+        <dt>Rekomendasi</dt><dd>Bulatkan ukuran yang dimasukkan ke ukuran lot pasar sebelum meminta kuotasi, tampilkan <code>Fills as 0.01 SOL (lot 0.01)</code> di bawah input, dan susun toast dari event fill, bukan dari permintaan.</dd>
+      </dl>
+      <figure class="wide clip">
+        <video controls muted preload="metadata" playsinline><source src="clips/a06.mp4" type="video/mp4">clips/a06.mp4</video>
+        <figcaption>Klip sorotan untuk A-06, dipotong pada momen-momen kunci dan tanpa suara. Segmen: Rec5 01:00-01:16. Rekaman lengkap tanpa potongan tersedia di bagian 9.</figcaption>
+      </figure>
+      <figure class="wide mid">
+        <img src="ev/a06-1-toast.jpg" alt="Market Order Placed toast with size 0.0120">
+        <figcaption>Gambar A-06.1. Rec5 01:12. Toast melaporkan Size 0.0120 ($1.20).</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Notifikasi Market Order Placed yang muncul tepat setelah order long pada SOL-PERP. Notifikasi melaporkan Position SOL Long, Size 0.0120 ($1.20), Price $100.34, Order Type Market, dan transaksi 49hj...jsGR. Bagi pengguna, hal ini terbaca sebagai konfirmasi bahwa posisi sebesar 0.012 SOL senilai 1.20 USD telah dibuka.</dd><dt>Tingkat keparahan</dt><dd>P1 (A-06). Notifikasi melaporkan ukuran order yang keliru, sehingga termasuk kategori P1: order atau posisi yang keliru.</dd><dt>Penyebab</dt><dd>Teks notifikasi disusun dari ukuran yang diminta pengguna pada tiket, bukan dari ukuran yang benar-benar terisi. Permintaannya 0.012 SOL, tetapi pasar hanya menerima lot utuh sebesar 0.01 SOL, sehingga fill sebenarnya lebih kecil daripada angka yang ditampilkan.</dd><dt>Potensi dampak</dt><dd>Pengguna mengira posisinya 20 persen lebih besar daripada kenyataannya. Keputusan terkait risiko, margin, dan keluar posisi kemudian didasarkan pada angka yang salah. Pada order yang lebih besar, selisih absolutnya bertambah seiring nilai nosional.</dd><dt>Solusi</dt><dd>Susun notifikasi dari event fill yang dikembalikan oleh bursa, dan tampilkan ukuran hasil pembulatan sebelum pengguna mengonfirmasi, misalnya Fills as 0.01 SOL (lot 0.01) di bawah kolom ukuran.</dd><dt>Bukti</dt><dd>Frame diambil dari rekaman Rec5 pada 01:12 (file rec-5-perps-orders.mp4, lengkap dan tanpa suara). Buka rekaman pada bagian Rekaman bukti dan putar mulai beberapa detik sebelum waktu tersebut untuk melihat rangkaian lengkap di sekitar frame.</dd><dt>Langkah reproduksi</dt><dd>1. Masukkan ukuran 1.2 USD pada SOL-PERP Long. 2. Baca dialog konfirmasi, lalu ketuk Place Long. 3. Baca toast Market Order Placed. 4. Baca Size dan Position Value pada tab Positions.</dd><dt>Masukan untuk tim</dt><dd>Pengguna harus selalu melihat ukuran yang benar-benar akan terisi. Baca ukuran lot setiap pasar, bulatkan ukuran yang dimasukkan sebelum konfirmasi, dan susun setiap notifikasi dari fill, bukan dari permintaan. Satu perubahan ini juga membuat hasil order yang berlawanan arah menjadi dapat diprediksi.</dd></dl>
+      </figure>
+      <figure class="wide">
+        <img src="ev/a06-2-filled.jpg" alt="Positions row showing 0.01 SOL and $1.00">
+        <figcaption>Gambar A-06.2. Rec5 01:12. Posisi terisi pada 0.01 SOL, nilai $1.00.</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Tabel Positions untuk order yang sama sesaat kemudian. Tabel mencantumkan SOL-PERP Long, Size 0.01 SOL, Position Value $1.00, Entry $100.36, Mark $100.34, dan Liq $95.36. Notifikasi pada gambar sebelumnya menyebutkan 0.0120 dan $1.20.</dd><dt>Tingkat keparahan</dt><dd>P1 (A-06). Bersama gambar A-06.1, ini merupakan bukti langsung bahwa ukuran yang ditampilkan dan ukuran sebenarnya tidak sama.</dd><dt>Penyebab</dt><dd>Ukuran lot pasar adalah 0.01 SOL. Order on-chain membulatkan 0.012 ke bawah menjadi 0.01, dan tidak ada bagian antarmuka yang membaca kembali pembulatan tersebut, baik sebelum maupun sesudah order.</dd><dt>Potensi dampak</dt><dd>Dialog konfirmasi, notifikasi, dan tabel posisi berselisih 20 persen. Pembulatan ini juga menjadi alasan mengapa, pada A-05, short sebesar 0.012 SOL menutup long sebesar 0.012 SOL secara tepat: keduanya sebenarnya 0.01 SOL.</dd><dt>Solusi</dt><dd>Bulatkan ukuran yang dimasukkan ke ukuran lot sebelum meminta kuotasi, tampilkan ukuran hasil pembulatan pada dialog konfirmasi, dan gunakan nilai pembulatan yang sama pada notifikasi dan riwayat order.</dd><dt>Bukti</dt><dd>Frame diambil dari rekaman Rec5 pada 01:12 (file rec-5-perps-orders.mp4, lengkap dan tanpa suara). Buka rekaman pada bagian Rekaman bukti dan putar mulai beberapa detik sebelum waktu tersebut untuk melihat rangkaian lengkap di sekitar frame.</dd><dt>Langkah reproduksi</dt><dd>1. Masukkan ukuran 1.2 USD pada SOL-PERP Long. 2. Baca dialog konfirmasi, lalu ketuk Place Long. 3. Baca toast Market Order Placed. 4. Baca Size dan Position Value pada tab Positions.</dd><dt>Masukan untuk tim</dt><dd>Pengguna harus selalu melihat ukuran yang benar-benar akan terisi. Baca ukuran lot setiap pasar, bulatkan ukuran yang dimasukkan sebelum konfirmasi, dan susun setiap notifikasi dari fill, bukan dari permintaan. Satu perubahan ini juga membuat hasil order yang berlawanan arah menjadi dapat diprediksi.</dd></dl>
+      </figure>
+      <button class="jump" data-v="rec5" data-t="60">Putar Rec5 pada 01:00</button>
+    </div>
+
+    <div class="rec">
+      <div class="hd">
+        <span class="id">A-02</span>
+        <span class="pill sev s2">P2 SEDANG</span>
+        <span class="kind">DIPERBARUI REV 4</span>
+        <h3 style="flex:1 1 100%">Max memilih seluruh saldo native; galat mentah Jupiter quote 400; tidak ada alasan yang ditampilkan</h3>
+      </div>
+      <dl class="fields">
+        <dt>Komponen</dt><dd>Panel order spot, tab Sell, preset persentase, penanganan galat kuotasi</dd>
+        <dt>Prasyarat</dt><dd>Dompet hanya menyimpan SOL native. Tidak ada wrapped SOL.</dd>
+        <dt>Langkah</dt>
+        <dd>
+          <ol class="steps">
+            <li>Buka pasangan spot SOL dan pilih tab Sell.</li>
+            <li>Ketuk Max.</li>
+            <li>Tunggu hingga kuotasi selesai dimuat dan coba kirim order.</li>
+            <li>Ketuk 75 persen dan tunggu kembali.</li>
+          </ol>
+        </dd>
+        <dt>Hasil yang diharapkan</dt><dd>Max menyisihkan rent dan biaya jaringan. Setiap kegagalan kuotasi dijelaskan dengan bahasa yang mudah dipahami beserta tindakan yang perlu diambil.</dd>
+        <dt>Hasil aktual</dt><dd>Rec0: Max mengisi <code>0.137792</code> SOL; kuotasi berhasil dimuat; Sell nonaktif selama 14 s tanpa pesan; 75 persen berfungsi. Rec1: Max mengisi <code>0.063742</code> SOL; kolom kuotasi tetap kosong dan panel menampilkan string mentah <code>Jupiter quote 400</code>. Kondisi ini berlanjut hingga Rec2 00:00 sampai 00:28, termasuk pada 25 persen.</dd>
+        <dt>Frekuensi</dt><dd>2 dari 2 sesi. Gejala berbeda menurut saldo: tombol nonaktif pada 0.137 SOL, HTTP 400 pada 0.064 SOL.</dd>
+        <dt>Akar penyebab</dt><dd>Hipotesis: Max menggunakan saldo lamport mentah tanpa cadangan. Dengan ruang yang lebih sempit, permintaan kuotasi itu sendiri ditolak oleh agregator dengan HTTP 400, dan kode status ditampilkan apa adanya. Kondisi yang berlanjut pada 25 persen mengindikasikan bahwa kuotasi yang gagal disimpan dalam cache alih-alih diminta ulang ketika jumlah berubah.</dd>
+        <dt>Risiko</dt><dd>Kontrol jual utama menemui jalan buntu bagi setiap pengguna yang menjual seluruh saldonya, yang merupakan tindakan keluar yang umum. Kode HTTP mentah memberi kesan bahwa platform rusak.</dd>
+        <dt>Rekomendasi</dt><dd>1. Max mengisi <code>balance - rentExempt - feeBuffer</code>, sekitar 0.003 SOL. 2. Petakan galat agregator ke pesan, misalnya <em>Keep about 0.003 SOL for network fees</em>. 3. Batalkan cache kuotasi setiap kali jumlah berubah. 4. Tampilkan alasan setiap kali kontrol dinonaktifkan.</dd>
+      </dl>
+      <figure class="wide clip">
+        <video controls muted preload="metadata" playsinline><source src="clips/a02.mp4" type="video/mp4">clips/a02.mp4</video>
+        <figcaption>Klip sorotan untuk A-02, dipotong pada momen-momen kunci dan tanpa suara. Segmen: Rec0 00:54-01:20, Rec1 00:58-01:18. Rekaman lengkap tanpa potongan tersedia di bagian 9.</figcaption>
+      </figure>
+        <figure class="wide">
+          <img src="f_030.jpg" alt="Sell panel, Max selected, full balance filled, quote valid, Sell control dimmed">
+          <figcaption>Gambar A-02.1. Rec0 00:58. Max mengisi 0.137792 SOL. Kuotasi valid, kontrol nonaktif.</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Tab Sell pada pasangan spot SOL setelah Max diketuk. Kolom jumlah terisi 0.137792 SOL, yaitu seluruh saldo SOL native. Kuotasi telah dimuat sepenuhnya, termasuk jumlah yang akan diterima, price impact, dan router. Namun tombol Sell tetap redup, dan tidak ada teks, tooltip, atau notifikasi yang menjelaskan alasannya.</dd><dt>Tingkat keparahan</dt><dd>P2 (A-02). Aksi utama tidak dapat diselesaikan, tetapi tersedia cara alternatif: memilih 75 persen mengaktifkan tombol.</dd><dt>Penyebab</dt><dd>Max menggunakan seluruh saldo native dan tidak menyisihkan apa pun untuk rent akun dan biaya jaringan. Pemeriksaan pada tahap berikutnya mendeteksi bahwa transaksi tidak mampu membayar biayanya sendiri dan menonaktifkan tombol tanpa pemberitahuan, sementara layanan kuotasi tidak mengetahui adanya cadangan tersebut.</dd><dt>Potensi dampak</dt><dd>Menjual seluruh saldo merupakan salah satu tindakan keluar yang paling umum. Pengguna yang tidak menemukan cara alternatif 75 persen akan terhambat dan dapat menyimpulkan bahwa bursa rusak atau dananya terkunci. Kuotasi lengkap di samping tombol yang tidak berfungsi juga melemahkan kepercayaan terhadap angka yang ditampilkan.</dd><dt>Solusi</dt><dd>Buat Max mengisi saldo dikurangi cadangan kecil sekitar 0.003 SOL untuk rent dan biaya, dan setiap kali tombol dinonaktifkan tampilkan alasannya dengan kalimat yang jelas, misalnya Keep about 0.003 SOL for network fees.</dd><dt>Bukti</dt><dd>Bingkai diambil dari rekaman Rec0 pada 00:58 (file spot-session-full.mp4, lengkap dan tanpa suara). Buka rekaman di bagian Rekaman bukti dan putar mulai beberapa detik sebelum waktu ini untuk melihat urutan lengkap di sekitar bingkai.</dd><dt>Langkah reproduksi</dt><dd>1. Buka pasangan spot SOL dan pilih tab Sell. 2. Ketuk Max. 3. Tunggu hingga kuotasi selesai dimuat dan coba kirim order. 4. Ketuk 75 persen dan tunggu kembali.</dd><dt>Masukan untuk tim</dt><dd>Menjual seluruh saldo adalah tindakan yang wajar dan tidak boleh berakhir pada tombol yang tidak berfungsi. Sisihkan biaya jaringan di dalam Max, ganti kode mentah seperti Jupiter quote 400 dengan kalimat yang memberi tahu pengguna apa yang harus dilakukan, dan pastikan kuotasi yang gagal diminta ulang segera setelah jumlah berubah. Tombol nonaktif tanpa alasan harus diperlakukan sebagai cacat dalam code review.</dd></dl>
+        </figure>
+      <figure class="wide tall">
+        <img src="ev/a02-2-quote400.jpg" alt="Sell panel with Max selected and Jupiter quote 400 error">
+        <figcaption>Gambar A-02.2. Rec1 01:04. Max mengisi 0.063742 SOL; panel menampilkan Jupiter quote 400.</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Tab Sell setelah Max diketuk pada saldo yang lebih kecil, yaitu 0.063742 SOL. Kolom kuotasi untuk jumlah diterima, impact, dan router tetap kosong, dan panel menampilkan teks mentah Jupiter quote 400 berwarna merah di bawah kotak kuotasi. Tombol Sell SOL tampak redup.</dd><dt>Tingkat keparahan</dt><dd>P2 (A-02). Cacat yang sama dengan gambar A-02.1, menunjukkan gejala kedua yang muncul pada saldo lebih rendah.</dd><dt>Penyebab</dt><dd>Dengan ruang untuk biaya yang semakin sempit, permintaan kuotasi itu sendiri ditolak oleh agregator Jupiter dengan status HTTP 400. Antarmuka menampilkan kode status tersebut apa adanya alih-alih menerjemahkannya menjadi pesan yang dapat ditindaklanjuti pengguna.</dd><dt>Potensi dampak</dt><dd>Kode HTTP mentah tidak memberi tahu trader awam apa yang harus dilakukan. Kode tersebut tampak seperti kegagalan sistem, yang merusak kepercayaan terhadap platform tepat pada saat pengguna berusaha keluar dari posisi.</dd><dt>Solusi</dt><dd>Petakan galat agregator yang sudah dikenal ke pesan yang jelas beserta tindakan yang tegas. Untuk kasus ini, pesan harus menyatakan bahwa sebagian SOL perlu disisihkan untuk biaya jaringan dan menyediakan tombol yang mengisi jumlah maksimum yang dapat dijual.</dd><dt>Bukti</dt><dd>Bingkai diambil dari rekaman Rec1 pada 01:04 (file rec-1-spot-max.mp4, lengkap dan tanpa suara). Buka rekaman di bagian Rekaman bukti dan putar mulai beberapa detik sebelum waktu ini untuk melihat urutan lengkap di sekitar bingkai.</dd><dt>Langkah reproduksi</dt><dd>1. Buka pasangan spot SOL dan pilih tab Sell. 2. Ketuk Max. 3. Tunggu hingga kuotasi selesai dimuat dan coba kirim order. 4. Ketuk 75 persen dan tunggu kembali.</dd><dt>Masukan untuk tim</dt><dd>Menjual seluruh saldo adalah tindakan yang wajar dan tidak boleh berakhir pada tombol yang tidak berfungsi. Sisihkan biaya jaringan di dalam Max, ganti kode mentah seperti Jupiter quote 400 dengan kalimat yang memberi tahu pengguna apa yang harus dilakukan, dan pastikan kuotasi yang gagal diminta ulang segera setelah jumlah berubah. Tombol nonaktif tanpa alasan harus diperlakukan sebagai cacat dalam code review.</dd></dl>
+      </figure>
+      <figure class="wide tall">
+        <img src="ev/a02-3-75pct.jpg" alt="Sell panel at 75 percent with no quote">
+        <figcaption>Gambar A-02.3. Rec1 01:14. Pada 75 persen kuotasi masih kosong.</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Tab Sell yang sama setelah beralih dari Max ke 75 persen, yang mengisi 0.047807 SOL dan menampilkan Selling 0.047807 SOL (~$4.76). Kolom jumlah diterima, impact, dan router masih kosong, sehingga jumlah yang lebih kecil tidak menghasilkan kuotasi baru.</dd><dt>Tingkat keparahan</dt><dd>P2 (A-02). Gambar ini menunjukkan bahwa kegagalan tetap berlanjut setelah pengguna mengubah jumlah.</dd><dt>Penyebab</dt><dd>Kuotasi yang gagal tampaknya disimpan dalam cache dan tidak diminta ulang ketika jumlah berubah. Pada sesi sebelumnya 75 persen berfungsi, yang menunjukkan bahwa jumlah yang lebih kecil itu sendiri valid; masalahnya adalah tidak ada permintaan baru yang dilakukan.</dd><dt>Potensi dampak</dt><dd>Bahkan cara alternatif yang paling jelas pun tidak memulihkan panel. Kondisi macet yang sama berlanjut ke rekaman berikutnya, termasuk pada 25 persen, sehingga pengguna tidak dapat menjual tanpa meninggalkan atau memuat ulang halaman.</dd><dt>Solusi</dt><dd>Batalkan kuotasi yang tersimpan dalam cache setiap kali jumlah berubah, ulangi kuotasi yang gagal setelah jeda singkat, dan hapus pesan galat segera setelah kuotasi baru yang valid diterima.</dd><dt>Bukti</dt><dd>Bingkai diambil dari rekaman Rec1 pada 01:14 (file rec-1-spot-max.mp4, lengkap dan tanpa suara). Buka rekaman di bagian Rekaman bukti dan putar mulai beberapa detik sebelum waktu ini untuk melihat urutan lengkap di sekitar bingkai.</dd><dt>Langkah reproduksi</dt><dd>1. Buka pasangan spot SOL dan pilih tab Sell. 2. Ketuk Max. 3. Tunggu hingga kuotasi selesai dimuat dan coba kirim order. 4. Ketuk 75 persen dan tunggu kembali.</dd><dt>Masukan untuk tim</dt><dd>Menjual seluruh saldo adalah tindakan yang wajar dan tidak boleh berakhir pada tombol yang tidak berfungsi. Sisihkan biaya jaringan di dalam Max, ganti kode mentah seperti Jupiter quote 400 dengan kalimat yang memberi tahu pengguna apa yang harus dilakukan, dan pastikan kuotasi yang gagal diminta ulang segera setelah jumlah berubah. Tombol nonaktif tanpa alasan harus diperlakukan sebagai cacat dalam code review.</dd></dl>
+      </figure>
+      <button class="jump" data-v="rec1" data-t="58">Putar Rec1 pada 00:58</button>
+      <button class="jump" data-v="rec2" data-t="0">Putar Rec2 pada 00:00</button>
+    </div>
+
+    <div class="rec">
+      <div class="hd">
+        <span class="id">A-03</span>
+        <span class="pill sev s2">P2 SEDANG</span>
+        <h3 style="flex:1 1 100%">Layanan quote tidak mengembalikan data sementara grafik harga terus diperbarui</h3>
+      </div>
+      <dl class="fields">
+        <dt>Komponen</dt><dd>Feed transaksi, layanan kuotasi, panel order</dd>
+        <dt>Prasyarat</dt><dd>Interaksi berkelanjutan pada pasangan spot SOL selama 60 hingga 90 s.</dd>
+        <dt>Langkah</dt>
+        <dd>
+          <ol class="steps">
+            <li>Tetap berada pada pasangan tersebut selama interaksi berkelanjutan.</li>
+            <li>Amati header panel Trades.</li>
+            <li>Ubah jumlah order dan amati kolom kuotasi.</li>
+          </ol>
+        </dd>
+        <dt>Hasil yang diharapkan</dt><dd>Penurunan layanan dikomunikasikan secara konsisten pada setiap panel yang bergantung, disertai opsi untuk mencoba ulang.</dd>
+        <dt>Hasil aktual</dt><dd>Panel Trades menampilkan lencana <code>DEGRADED</code> di atas <em>No data yet.</em> Panel order menampilkan tanda strip untuk jumlah diterima, price impact, dan router, serta menolak pengiriman. Grafik candlestick dan strip ticker tetap diperbarui secara normal.</dd>
+        <dt>Frekuensi</dt><dd>Satu kali dalam Rec0, setelah 60 hingga 90 s interaksi berkelanjutan. Tidak teramati kembali pada 13 Sep.</dd>
+        <dt>Akar penyebab</dt><dd>Hipotesis: stream transaksi dan endpoint kuotasi menggunakan backend atau batas laju yang sama, yang tidak digunakan oleh feed grafik. Status degraded tersedia untuk panel Trades tetapi tidak untuk panel order, sehingga gangguan layanan tampil sebagai tanda strip placeholder yang tidak dapat dibedakan dari kondisi input kosong.</dd>
+        <dt>Risiko</dt><dd>Grafik yang bergerak dianggap sebagai bukti bahwa platform dalam kondisi sehat. Sinyal yang saling bertentangan selama pergerakan harga berkontribusi pada waktu keluar posisi yang tidak tepat dan pada sengketa yang dikaitkan dengan fill, bukan dengan feed.</dd>
+        <dt>Rekomendasi</dt><dd>Sebarkan satu status kesehatan platform ke semua panel yang bergantung. Ketika kuotasi tidak tersedia, nyatakan secara eksplisit dan sediakan opsi coba ulang. Tambahkan percobaan ulang dengan backoff pada langganan kuotasi.</dd>
+      </dl>
+      <figure class="wide clip">
+        <video controls muted preload="metadata" playsinline><source src="clips/a03.mp4" type="video/mp4">clips/a03.mp4</video>
+        <figcaption>Klip sorotan untuk A-03, dipotong pada momen-momen kunci dan tanpa suara. Segmen: Rec0 01:10-01:26. Rekaman lengkap tanpa potongan tersedia di bagian 9.</figcaption>
+      </figure>
+      <figure style="margin-top:1.1rem">
+        <img src="f_042.jpg" alt="Trades panel badged DEGRADED with no rows while the price chart continues updating">
+        <figcaption>Gambar A-03.1. Rec0 01:22. Feed menurun, kolom kuotasi kosong, grafik tetap diperbarui.</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Layar trading spot selama penggunaan berkelanjutan. Panel Trades menampilkan label DEGRADED tanpa baris transaksi, dan kolom kuotasi pada panel order berubah menjadi tanda strip. Pada saat yang sama, grafik harga dan strip ticker tetap bergerak secara normal.</dd><dt>Tingkat keparahan</dt><dd>P2 (A-03). Penempatan order untuk sementara tidak dapat dilakukan, tetapi kondisi ini pulih dan percobaan ulang dimungkinkan.</dd><dt>Penyebab</dt><dd>Feed transaksi dan layanan kuotasi kemungkinan besar bergantung pada backend yang sama atau berbagi batas laju, sedangkan data grafik berasal dari sumber yang berbeda. Hanya panel Trades yang memiliki status degraded; panel order tidak memilikinya, sehingga gangguan layanan tampak sama dengan input kosong.</dd><dt>Potensi dampak</dt><dd>Grafik yang bergerak memberi tahu pengguna bahwa platform dalam kondisi sehat. Pengguna terus mencoba menempatkan order selama pergerakan harga tanpa mengetahui bahwa kuotasi tidak tersedia, yang berujung pada waktu masuk dan keluar posisi yang tidak tepat serta keluhan yang keliru dialamatkan pada fill.</dd><dt>Solusi</dt><dd>Pertahankan satu status kesehatan platform dan tampilkan pada setiap panel yang bergantung padanya. Ketika kuotasi tidak tersedia, nyatakan secara eksplisit di panel order disertai aksi Retry, dan ulangi langganan kuotasi secara otomatis dengan jeda yang semakin panjang.</dd><dt>Bukti</dt><dd>Bingkai diambil dari rekaman Rec0 pada 01:22 (file spot-session-full.mp4, lengkap dan tanpa suara). Buka rekaman di bagian Rekaman bukti dan putar mulai beberapa detik sebelum waktu ini untuk melihat urutan lengkap di sekitar bingkai.</dd><dt>Langkah reproduksi</dt><dd>1. Tetap berada pada pasangan tersebut selama interaksi berkelanjutan. 2. Amati header panel Trades. 3. Ubah jumlah order dan amati kolom kuotasi.</dd><dt>Masukan untuk tim</dt><dd>Ketika satu layanan gagal, setiap panel yang bergantung padanya harus menyampaikannya dengan cara yang sama. Grafik yang bergerak di samping panel order yang diam-diam tidak dapat memberikan kuotasi membingungkan dan merugikan saat pasar bergerak cepat. Satu indikator kesehatan bersama dengan tombol Retry akan menghilangkan ketidaksesuaian tersebut.</dd></dl>
+      </figure>
+    </div>
+
+    <div class="rec">
+      <div class="hd">
+        <span class="id">A-04</span>
+        <span class="pill sev s3">P3 MINOR</span>
+        <h3 style="flex:1 1 100%">Tampilan saldo tertinggal sekitar 8 s dari konfirmasi swap</h3>
+      </div>
+      <dl class="fields">
+        <dt>Komponen</dt><dd>Tampilan saldo, handler konfirmasi swap</dd>
+        <dt>Langkah</dt>
+        <dd>
+          <ol class="steps">
+            <li>Lakukan penjualan spot.</li>
+            <li>Saat toast keberhasilan muncul, baca baris saldo.</li>
+            <li>Tunggu interval polling berikutnya.</li>
+          </ol>
+        </dd>
+        <dt>Hasil yang diharapkan</dt><dd>Saldo mencerminkan transaksi yang telah selesai ketika konfirmasi ditampilkan, atau menampilkan status tertunda secara eksplisit.</dd>
+        <dt>Hasil aktual</dt><dd><code>Swap Success</code> toast ditampilkan beserta signature sementara saldo masih menunjukkan <code>0.2 SOL</code> dan <code>0 USDC</code>. Nilai terbaru (<code>0.148077 SOL</code>, <code>5.15 USDC</code>) muncul sekitar 8 s kemudian.</dd>
+        <dt>Frekuensi</dt><dd>2 dari 2 swap dalam Rec0. Swap pertama: toast 00:22, saldo 00:30 (sekitar 8 s). Swap kedua sebesar 0.01 SOL, dikirim pada 00:30 ketika saldo masih usang: toast 00:31, saldo 00:41 (sekitar 10 s).</dd>
+        <dt>Akar penyebab</dt><dd>Hipotesis: saldo diambil dari polling berinterval tetap yang tidak dibatalkan saat konfirmasi swap.</dd>
+        <dt>Risiko</dt><dd>Pengguna mengirim ulang ketika angka tidak diperbarui. Dikombinasikan dengan A-01, yang membiarkan aksi tetap aktif, hal ini memungkinkan terjadinya order nyata ganda. Hasil tersebut memenuhi definisi <strong>P0</strong> .</dd>
+        <dt>Rekomendasi</dt><dd>Batalkan dan ambil ulang kueri saldo di dalam handler konfirmasi swap. Tampilkan nilai tertunda secara optimistis selama masa tunggu.</dd>
+      </dl>
+      <figure class="wide clip">
+        <video controls muted preload="metadata" playsinline><source src="clips/a04.mp4" type="video/mp4">clips/a04.mp4</video>
+        <figcaption>Klip sorotan untuk A-04, dipotong pada momen-momen kunci dan tanpa suara. Segmen: Rec0 00:14-00:44. Rekaman lengkap tanpa potongan tersedia di bagian 9.</figcaption>
+      </figure>
+      <figure class="wide tall">
+        <img src="ev/a04-1-toast.jpg" alt="Sell panel with Swap Success toast while balance still reads 0.2 SOL and 0 USDC">
+        <figcaption>Gambar A-04.1. Rec0 00:22. Swap pertama berhasil (3ZXJ...); saldo masih 0.2 SOL dan 0 USDC.</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Tab Sell tepat setelah penjualan 0.05 SOL. Notifikasi Swap Success dengan transaksi 3ZXJ... ditampilkan di bagian bawah. Pada bingkai yang sama, Your balance masih menunjukkan 0.2 SOL dan saldo USDC masih menunjukkan 0 USDC, seolah-olah penjualan belum terjadi.</dd><dt>Tingkat keparahan</dt><dd>P3 (A-04). Keterlambatan tampilan yang tidak mengubah saldo sebenarnya, tetapi dapat mendorong pengguna bertindak berdasarkan angka yang sudah usang.</dd><dt>Penyebab</dt><dd>Saldo diperbarui berdasarkan interval polling tetap. Keberhasilan swap tidak memicu pembaruan segera, sehingga angka tetap lama hingga polling terjadwal berikutnya, sekitar 8 detik kemudian dalam rekaman ini.</dd><dt>Potensi dampak</dt><dd>Pengguna melihat keberhasilan tetapi saldo tidak berubah, dan reaksi yang wajar adalah meragukan hasilnya lalu bertransaksi lagi. Dikombinasikan dengan A-01, di mana tombol tetap aktif, hal ini dapat berujung pada order kedua yang tidak disengaja.</dd><dt>Solusi</dt><dd>Minta saldo terbaru di dalam handler konfirmasi swap, dan selama nilai baru dimuat tampilkan status tertunda atau saldo baru yang diharapkan alih-alih saldo lama.</dd><dt>Bukti</dt><dd>Bingkai diambil dari rekaman Rec0 pada 00:22 (file spot-session-full.mp4, lengkap dan tanpa suara). Buka rekaman di bagian Rekaman bukti dan putar mulai beberapa detik sebelum waktu ini untuk melihat urutan lengkap di sekitar bingkai.</dd><dt>Langkah reproduksi</dt><dd>1. Lakukan penjualan spot. 2. Saat toast keberhasilan muncul, baca baris saldo. 3. Tunggu interval polling berikutnya.</dd><dt>Masukan untuk tim</dt><dd>Perbarui saldo segera setelah transaksi terkonfirmasi, tanpa menunggu polling berikutnya. Menampilkan perkiraan saldo baru selama pembaruan berlangsung akan mencegah pengguna bertransaksi kembali berdasarkan angka lama, yang justru terjadi dalam rekaman.</dd></dl>
+      </figure>
+      <figure class="wide tall">
+        <img src="ev/a04-2-updated.jpg" alt="Sell panel at 00:31 with second Swap Success toast and balance reflecting only the first swap">
+        <figcaption>Gambar A-04.2. Rec0 00:31. Saldo mencapai 0.148077 SOL, yang hanya mencerminkan swap pertama, padahal swap kedua (4xwR...) sudah berhasil. Saldo hasil swap kedua, 0.137792 SOL, baru muncul pada 00:41.</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Panel yang sama sembilan detik kemudian. Saldo kini tertulis 0.148077 SOL dan USDC tertulis 5.15, yang hanya mencerminkan penjualan pertama. Notifikasi Swap Success kedua, transaksi 4xwR..., sudah tampil di layar untuk penjualan kedua sebesar 0.01 SOL yang dikirim ketika saldo masih belum diperbarui.</dd><dt>Tingkat keparahan</dt><dd>P3 (A-04). Gambar ini menunjukkan keterlambatan yang berulang dan bertumpang tindih dengan transaksi kedua.</dd><dt>Penyebab</dt><dd>Keterlambatan polling yang sama. Penjualan kedua diajukan sebelum penjualan pertama tercermin, dan hasilnya sendiri baru muncul pada saldo pukul 00:41, sekitar 10 detik setelah notifikasinya.</dd><dt>Potensi dampak</dt><dd>Rekaman memperlihatkan risiko yang diuraikan pada gambar A-04.1 benar-benar terjadi: pengguna bertransaksi kembali sambil melihat saldo yang sudah usang. Dengan nominal yang lebih besar, hal ini dapat menyebabkan penjualan melebihi jumlah yang dimaksud.</dd><dt>Solusi</dt><dd>Perbaikan sama dengan gambar A-04.1. Selain itu, tampilkan transaksi tertunda terbaru di samping saldo agar pengguna dapat melihat order mana yang sudah diperhitungkan.</dd><dt>Bukti</dt><dd>Cuplikan bingkai dari rekaman Rec0 pada 00:31 (berkas spot-session-full.mp4, utuh dan tanpa suara). Buka rekaman pada bagian rekaman bukti dan putar mulai beberapa detik sebelum waktu ini untuk melihat urutan lengkap di sekitar bingkai tersebut.</dd><dt>Langkah reproduksi</dt><dd>1. Lakukan penjualan spot. 2. Saat toast keberhasilan muncul, baca baris saldo. 3. Tunggu interval polling berikutnya.</dd><dt>Masukan untuk tim</dt><dd>Perbarui saldo segera setelah transaksi terkonfirmasi, tanpa menunggu polling berikutnya. Menampilkan perkiraan saldo baru selama pembaruan berlangsung akan mencegah pengguna bertransaksi kembali berdasarkan angka lama, yang justru terjadi dalam rekaman.</dd></dl>
+      </figure>
+      <button class="jump" data-v="rec0" data-t="16">Putar Rec0 pada 00:16</button>
+    </div>
+
+    <div class="rec">
+      <div class="hd">
+        <span class="id">A-13</span>
+        <span class="pill sev s2">P2 SEDANG</span>
+        <h3 style="flex:1 1 100%">Permintaan status trader terkena pembatasan laju (429); akun ditampilkan sebagai belum terverifikasi dengan saldo nol dan tanpa percobaan ulang otomatis</h3>
+      </div>
+      <dl class="fields">
+        <dt>Komponen</dt><dd>Pemuatan status trader perps, tab posisi, tiket order</dd>
+        <dt>Prasyarat</dt><dd>Trader terdaftar dengan jaminan USD 10 dan satu posisi terbuka. Halaman perps terbuka, ETH-PERP.</dd>
+        <dt>Langkah</dt>
+        <dd>
+          <ol class="steps">
+            <li>Buka pasar perps dalam keadaan terdaftar, dengan jaminan dan posisi terbuka.</li>
+            <li>Tetap berada di halaman, atau berpindah pasar beberapa kali.</li>
+            <li>Baca tab Positions dan tiket order.</li>
+            <li>Tunggu tanpa menekan Retry dan catat apakah status pulih.</li>
+          </ol>
+        </dd>
+        <dt>Hasil yang diharapkan</dt><dd>Galat 429 yang bersifat sementara dicoba ulang secara otomatis dengan backoff. Posisi dan saldo terakhir yang diketahui tetap tampil di layar, ditandai sedang diperbarui.</dd>
+        <dt>Hasil aktual</dt><dd>00:46:49: area posisi menampilkan <code>Could not verify Phoenix registration.</code> <code>Phoenix trader state 429</code> dengan tautan Retry. Pada saat yang sama tiket kembali ke status belum terdaftar: <code>Deposit USDC to trade</code>, <code>Available to Trade $0.00</code>, <code>Positions (0)</code>, leverage order kosong. 00:46:57: status kembali, <code>Available to Trade $9.95</code>, <code>Positions (1)</code>, leverage 25.0x. Tangkapan layar tidak menunjukkan apakah Retry ditekan; penguji melaporkan bahwa halaman tidak memperbarui dirinya sendiri dan posisi sering tidak dapat dibaca.</dd>
+        <dt>Frekuensi</dt><dd>Dilaporkan sering terjadi oleh penguji. 2 tangkapan pada 14 Sep 2026, pukul 00:46 dan 13:57 (tata letak seluler, filter All). Galat 429 yang sama muncul pada A-05 (Rec5 01:36) di hari yang berbeda.</dd>
+        <dt>Akar penyebab</dt><dd>Endpoint status trader (atau RPC di baliknya) terkena pembatasan laju, dan klien memperlakukan pembacaan yang gagal sebagai "belum terdaftar, tanpa jaminan, tanpa posisi" alih-alih "tidak diketahui". Tidak ada percobaan ulang otomatis yang dijadwalkan. Terulangnya kejadian pada 13 dan 14 September menjadikan hal ini kemungkinan penyebab bersama di balik hipotesis B pada A-05.</dd>
+        <dt>Risiko</dt><dd>Selama galat berlangsung, akun menampilkan saldo nol dan posisi nol padahal posisi ber-leverage masih terbuka, sehingga pengguna tidak dapat memantau atau menutupnya. Pengguna yang mengira akunnya belum terdaftar dapat mendaftar atau melakukan deposit ulang. Solusi sementara: Retry atau muat ulang.</dd>
+        <dt>Rekomendasi</dt><dd>1. Simpan status trader terakhir yang berhasil dan tampilkan sebagai data usang beserta stempel waktunya; jangan pernah mengganti nilai yang tidak diketahui dengan nol. 2. Coba ulang galat 429 secara otomatis dengan exponential backoff dan jitter, dengan mematuhi Retry-After. 3. Hilangkan duplikasi dan simpan cache pembacaan status trader lintas komponen (satu permintaan per wallet per interval), serta utamakan websocket atau langganan akun dibandingkan polling. 4. Pertahankan ketersediaan input order untuk menutup posisi berdasarkan status dari cache.</dd>
+      </dl>
+      <figure class="wide">
+        <img src="ev/a13-1-error.jpg" alt="Positions area with 429 error and ticket showing zero available">
+        <figcaption>Gambar A-13.1. 14 Sep 2026 00:46:49. Could not verify Phoenix registration, 429; Available $0.00; Positions (0).</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Layar ETH-PERP pada 14 September pukul 00:46:49. Area posisi menampilkan Could not verify Phoenix registration, diikuti Phoenix trader state 429 berwarna merah dan tautan Retry. Tiket order di sebelah kanan kembali ke status pengguna yang benar-benar baru: Deposit USDC to trade, Available to Trade $0.00, Position 0, dan nilai leverage kosong.</dd><dt>Tingkat keparahan</dt><dd>P2 (A-13). Akun tidak dapat dibaca untuk waktu singkat, dan Retry atau muat ulang memulihkannya.</dd><dt>Penyebab</dt><dd>Pencarian status akun yang sama seperti pada A-05 kembali terkena pembatasan laju. Ketika pencarian gagal, antarmuka tidak memperlakukan hasilnya sebagai tidak diketahui; antarmuka memperlakukannya sebagai belum terdaftar, tanpa jaminan dan tanpa posisi, lalu menampilkan angka nol.</dd><dt>Potensi dampak</dt><dd>Selama posisi ber-leverage masih terbuka, pengguna melihat saldo nol dan posisi nol serta tidak dapat memantau atau menutup posisi dari layar ini. Pengguna yang mengira akunnya telah direset dapat mencoba mendaftar ulang atau menyetor dana tambahan.</dd><dt>Solusi</dt><dd>Pertahankan status akun terakhir yang berhasil di layar dan tandai sebagai usang beserta waktu pemuatannya. Jangan pernah mengganti nilai yang tidak diketahui dengan nol. Coba ulang pencarian yang terkena pembatasan laju secara otomatis, dan kurangi jumlah pencarian dengan membagikan satu hasil cache ke seluruh panel.</dd><dt>Bukti</dt><dd>Tangkapan layar perangkat yang diambil pukul 00:46:49 pada 14 September 2026. Berkas disimpan tanpa penyuntingan bersama tangkapan layar asli sesi tersebut.</dd><dt>Langkah reproduksi</dt><dd>1. Buka pasar perps dalam keadaan terdaftar, dengan jaminan dan posisi terbuka. 2. Tetap berada di halaman, atau berpindah pasar beberapa kali. 3. Baca tab Positions dan tiket order. 4. Tunggu tanpa menekan Retry dan catat apakah status pulih.</dd><dt>Masukan untuk tim</dt><dd>Data akun tidak boleh berubah menjadi nol hanya karena satu permintaan gagal. Pertahankan posisi dan saldo terakhir yang diketahui di layar beserta waktu pemuatannya, perbarui secara otomatis di latar belakang dengan percobaan ulang, dan bagikan satu hasil cache ke seluruh panel untuk mengurangi jumlah permintaan yang terkena pembatasan laju. Langkah ini juga mengatasi posisi yang menghilang hingga browser dimuat ulang.</dd></dl>
+      </figure>
+      <figure class="wide">
+        <img src="ev/a13-2-recovered.jpg" alt="Ticket showing 9.95 available and one position">
+        <figcaption>Gambar A-13.2. 14 Sep 2026 00:46:57. Status pulih: Available $9.95; Positions (1).</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Layar yang sama delapan detik kemudian, pukul 00:46:57. Tiket kini menampilkan Available to Trade $9.95, leverage tertulis 25.0x, dan tab tertulis Positions (1). Data akun kembali tanpa ada perubahan apa pun pada akun itu sendiri.</dd><dt>Tingkat keparahan</dt><dd>P2 (A-13). Gambar ini menegaskan bahwa gambar A-13.1 merupakan kegagalan tampilan.</dd><dt>Penyebab</dt><dd>Pencarian akun berikutnya berhasil. Jaminan dan posisi tidak pernah hilang; hanya permintaan untuk membacanya yang gagal.</dd><dt>Potensi dampak</dt><dd>Hal ini membuktikan bahwa angka nol pada gambar A-13.1 tidak benar. Setiap keputusan yang diambil pengguna selama delapan detik tersebut, misalnya melakukan deposit ulang, akan didasarkan pada data yang keliru.</dd><dt>Solusi</dt><dd>Perbaikan sama dengan gambar A-13.1.</dd><dt>Bukti</dt><dd>Tangkapan layar perangkat yang diambil pukul 00:46:57 pada 14 September 2026. Berkas disimpan tanpa penyuntingan bersama tangkapan layar asli sesi tersebut.</dd><dt>Langkah reproduksi</dt><dd>1. Buka pasar perps dalam keadaan terdaftar, dengan jaminan dan posisi terbuka. 2. Tetap berada di halaman, atau berpindah pasar beberapa kali. 3. Baca tab Positions dan tiket order. 4. Tunggu tanpa menekan Retry dan catat apakah status pulih.</dd><dt>Masukan untuk tim</dt><dd>Data akun tidak boleh berubah menjadi nol hanya karena satu permintaan gagal. Pertahankan posisi dan saldo terakhir yang diketahui di layar beserta waktu pemuatannya, perbarui secara otomatis di latar belakang dengan percobaan ulang, dan bagikan satu hasil cache ke seluruh panel untuk mengurangi jumlah permintaan yang terkena pembatasan laju. Langkah ini juga mengatasi posisi yang menghilang hingga browser dimuat ulang.</dd></dl>
+      </figure>
+      <figure class="wide mid">
+        <img src="ev/a13-3-mobile.jpg" alt="Mobile perps screen with filter All showing Positions 0 and No positions">
+        <figcaption>Gambar A-13.3. 14 Sep 2026 13:57, tata letak seluler. Filter All, Positions (0), No positions; penguji melaporkan bahwa terdapat posisi terbuka yang muncul kembali setelah browser dimuat ulang.</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Layar perps dalam tata letak seluler pada 14 September pukul 13:57, menampilkan ETH-PERP. Tab Positions terbuka dengan filter pasar diatur ke All, yang seharusnya menampilkan seluruh posisi terbuka di semua pasar. Tab tertulis Positions (0), Open Orders (0), dan tabel tertulis No positions. Penguji melaporkan bahwa saat itu terdapat posisi terbuka yang muncul kembali setelah browser dimuat ulang.</dd><dt>Tingkat keparahan</dt><dd>P2 (A-13). Posisi menghilang dari tampilan tanpa tindakan apa pun dari pengguna dan muncul kembali setelah muat ulang.</dd><dt>Penyebab</dt><dd>Berbeda dengan A-10, filter di sini adalah All, sehingga tabel kosong tidak dapat dijelaskan oleh filter pasar. Penyebab yang paling mungkin sama dengan yang ditunjukkan pada gambar A-13.1: permintaan status akun gagal atau terlambat kembali, dan antarmuka menampilkan hasil yang gagal sebagai akun kosong. Tidak ada galat yang terlihat pada bingkai ini, yang mengindikasikan bahwa kegagalan terkadang terjadi tanpa pemberitahuan, dan tidak ada salinan cache dari status baik terakhir yang disimpan.</dd><dt>Potensi dampak</dt><dd>Posisi terbuka dapat menghilang dari layar sewaktu-waktu, bahkan dengan filter paling luas. Pengguna tidak dapat mengetahui apakah posisi telah ditutup, dilikuidasi, atau sekadar belum dimuat, dan harus memuat ulang browser untuk memastikannya. Pada posisi ber-leverage, keterlambatan ini dapat menimbulkan kerugian.</dd><dt>Solusi</dt><dd>Simpan cache status akun terakhir yang berhasil untuk setiap wallet dan tetap tampilkan, ditandai dengan waktu pemuatannya, selama permintaan baru berjalan. Perbarui posisi secara otomatis pada interval tertentu dan setelah setiap order, coba ulang kegagalan dengan jeda yang semakin panjang, dan tampilkan status Refreshing atau Could not load yang terlihat alih-alih tabel kosong.</dd><dt>Bukti</dt><dd>Tangkapan layar perangkat yang diambil pukul 13:57 pada 14 September 2026. Berkas disimpan tanpa penyuntingan bersama tangkapan layar asli sesi tersebut.</dd><dt>Langkah reproduksi</dt><dd>1. Buka pasar perps dalam keadaan terdaftar, dengan jaminan dan posisi terbuka. 2. Tetap berada di halaman, atau berpindah pasar beberapa kali. 3. Baca tab Positions dan tiket order. 4. Tunggu tanpa menekan Retry dan catat apakah status pulih.</dd><dt>Masukan untuk tim</dt><dd>Data akun tidak boleh berubah menjadi nol hanya karena satu permintaan gagal. Pertahankan posisi dan saldo terakhir yang diketahui di layar beserta waktu pemuatannya, perbarui secara otomatis di latar belakang dengan percobaan ulang, dan bagikan satu hasil cache ke seluruh panel untuk mengurangi jumlah permintaan yang terkena pembatasan laju. Langkah ini juga mengatasi posisi yang menghilang hingga browser dimuat ulang.</dd></dl>
+      </figure>
+    </div>
+
+    <div class="rec">
+      <div class="hd">
+        <span class="id">A-07</span>
+        <span class="pill sev s2">P2 SEDANG</span>
+        <h3 style="flex:1 1 100%">Kegagalan pengambilan daftar pasar perps ditampilkan sebagai kategori kosong</h3>
+      </div>
+      <dl class="fields">
+        <dt>Komponen</dt><dd>Daftar pasar pada panel kiri perps, header pasar</dd>
+        <dt>Prasyarat</dt><dd>Halaman perps terbuka lebih dari 60 detik, sambil berpindah pasar.</dd>
+        <dt>Langkah</dt>
+        <dd>
+          <ol class="steps">
+            <li>Buka Perps dengan kategori All terpilih.</li>
+            <li>Berpindah antarpasar, misalnya dari SOL-PERP ke AAPL-PERP.</li>
+            <li>Amati daftar pasar serta kolom Mark, Index dan Funding.</li>
+          </ol>
+        </dd>
+        <dt>Hasil yang diharapkan</dt><dd>Status memuat atau galat dengan opsi coba ulang, dan daftar sebelumnya dipertahankan hingga data baru tiba.</dd>
+        <dt>Hasil aktual</dt><dd>Pada Rec2 01:56 daftar terisi. Pada 02:00 kategori All menampilkan <code>No markets in this category.</code> dan header menampilkan Mark, Index dan Funding kosong. Penguji melaporkan bahwa pada kesempatan lain panel menampilkan galat API; teks tersebut tidak terekam dalam rekaman ini.</dd>
+        <dt>Frekuensi</dt><dd>Terjadi sesekali. 1 tangkapan pada Rec2.</dd>
+        <dt>Akar penyebab</dt><dd>Hipotesis: permintaan daftar pasar gagal atau melewati batas waktu, dan respons kosong ditampilkan melalui cabang status kosong. Kategori All tidak mungkin kosong secara sah, sehingga ini merupakan pengambilan data yang gagal yang ditampilkan sebagai data.</dd>
+        <dt>Risiko</dt><dd>Pengguna menyimpulkan bahwa pasar telah dihapus. Solusi sementara: muat ulang.</dd>
+        <dt>Rekomendasi</dt><dd>Bedakan galat dari data kosong. Pertahankan daftar baik terakhir (stale-while-revalidate), tampilkan "Could not load markets. Retry", dan coba ulang dengan backoff.</dd>
+      </dl>
+      <figure class="wide clip">
+        <video controls muted preload="metadata" playsinline><source src="clips/a07.mp4" type="video/mp4">clips/a07.mp4</video>
+        <figcaption>Klip sorotan untuk A-07, dipotong pada momen-momen kunci dan tanpa suara. Segmen: Rec2 01:48-02:07. Rekaman lengkap tanpa potongan tersedia di bagian 9.</figcaption>
+      </figure>
+      <figure class="wide mid">
+        <img src="ev/a07-1-loaded.jpg" alt="Perps market list populated">
+        <figcaption>Gambar A-07.1. Rec2 01:56. Daftar pasar termuat.</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Daftar pasar perps dalam kondisi normal. Kategori All terpilih dan menampilkan AAPL-PERP, AAVE-PERP, ADA-PERP, AMAT-PERP, AMD-PERP dan AMZN-PERP, masing-masing dengan harga, funding rate dan perubahan 24 jam.</dd><dt>Tingkat keparahan</dt><dd>Konteks untuk A-07. Gambar ini merupakan kondisi normal sebagai pembanding.</dd><dt>Penyebab</dt><dd>Tidak ada cacat pada langkah ini.</dd><dt>Potensi dampak</dt><dd>Gambar ini menunjukkan tampilan daftar yang semestinya, sehingga daftar kosong pada gambar berikutnya dapat dikenali sebagai kegagalan, bukan perubahan yang sesungguhnya.</dd><dt>Solusi</dt><dd>Tidak ada tindakan untuk gambar ini.</dd><dt>Bukti</dt><dd>Cuplikan bingkai dari rekaman Rec2 pada 01:56 (berkas rec-2-balances-perps.mp4, utuh dan tanpa suara). Buka rekaman pada bagian rekaman bukti dan putar mulai beberapa detik sebelum waktu ini untuk melihat urutan lengkap di sekitar bingkai tersebut.</dd><dt>Langkah reproduksi</dt><dd>1. Buka Perps dengan kategori All terpilih. 2. Berpindah antarpasar, misalnya dari SOL-PERP ke AAPL-PERP. 3. Amati daftar pasar serta kolom Mark, Index dan Funding.</dd><dt>Masukan untuk tim</dt><dd>Daftar kosong dan permintaan yang gagal harus terlihat berbeda. Mempertahankan daftar baik terakhir di layar selama pemuatan, serta menampilkan galat yang jelas dengan Retry ketika pemuatan gagal, akan mencegah pengguna mengira pasar telah dihapus.</dd></dl>
+      </figure>
+      <figure class="wide mid">
+        <img src="ev/a07-2-empty.jpg" alt="Perps market list empty">
+        <figcaption>Gambar A-07.2. Rec2 02:02. Kategori All menampilkan No markets in this category.</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Kategori All yang sama beberapa detik kemudian kini menampilkan No markets in this category. Area daftar kosong, meskipun grafik AAPL-PERP masih terlihat di sebelah kanan.</dd><dt>Tingkat keparahan</dt><dd>P2 (A-07). Pasar untuk sementara menghilang dari daftar; memuat ulang halaman memunculkannya kembali.</dd><dt>Penyebab</dt><dd>Kategori All tidak mungkin kosong pada bursa yang berfungsi normal, sehingga ini merupakan permintaan daftar pasar yang gagal namun ditampilkan melalui layar hasil kosong. Antarmuka tidak membedakan antara tidak ada data yang dikembalikan dan data yang tidak dapat dimuat.</dd><dt>Potensi dampak</dt><dd>Pengguna dapat mengira pasar telah dihapus atau bursa akan ditutup. Pengguna tidak dapat berpindah pasar hingga memuat ulang. Penguji juga melaporkan bahwa panel terkadang menampilkan teks galat API di tempat yang sama.</dd><dt>Solusi</dt><dd>Tetap tampilkan daftar terakhir yang berhasil dimuat selama permintaan baru berlangsung. Jika pemuatan gagal, tampilkan Could not load markets dengan tombol Retry, dan coba ulang secara otomatis setelah jeda singkat.</dd><dt>Bukti</dt><dd>Cuplikan bingkai dari rekaman Rec2 pada 02:02 (berkas rec-2-balances-perps.mp4, utuh dan tanpa suara). Buka rekaman pada bagian rekaman bukti dan putar mulai beberapa detik sebelum waktu ini untuk melihat urutan lengkap di sekitar bingkai tersebut.</dd><dt>Langkah reproduksi</dt><dd>1. Buka Perps dengan kategori All terpilih. 2. Berpindah antarpasar, misalnya dari SOL-PERP ke AAPL-PERP. 3. Amati daftar pasar serta kolom Mark, Index dan Funding.</dd><dt>Masukan untuk tim</dt><dd>Daftar kosong dan permintaan yang gagal harus terlihat berbeda. Mempertahankan daftar baik terakhir di layar selama pemuatan, serta menampilkan galat yang jelas dengan Retry ketika pemuatan gagal, akan mencegah pengguna mengira pasar telah dihapus.</dd></dl>
+      </figure>
+      <button class="jump" data-v="rec2" data-t="110">Putar Rec2 pada 01:50</button>
+    </div>
+
+    <div class="rec">
+      <div class="hd">
+        <span class="id">A-08</span>
+        <span class="pill sev s2">P2 SEDANG</span>
+        <h3 style="flex:1 1 100%">Registrasi trader tertahan pada Registering hingga halaman dimuat ulang</h3>
+      </div>
+      <dl class="fields">
+        <dt>Komponen</dt><dd>Onboarding perps, Register as a Phoenix trader</dd>
+        <dt>Prasyarat</dt><dd>Wallet belum terdaftar. Tersedia sekurang-kurangnya 0.02 SOL untuk sewa akun.</dd>
+        <dt>Langkah</dt>
+        <dd>
+          <ol class="steps">
+            <li>Buka pasar perps mana pun. Tekan Register.</li>
+            <li>Tunggu dengan halaman tetap terbuka.</li>
+            <li>Muat ulang halaman dan tekan Register kembali.</li>
+          </ol>
+        </dd>
+        <dt>Hasil yang diharapkan</dt><dd>Pendaftaran selesai, atau gagal dengan alasan dan opsi coba ulang, dalam batas waktu tertentu.</dd>
+        <dt>Hasil aktual</dt><dd>Rec3: tombol menampilkan <code>Registering...</code> sejak 00:36 hingga rekaman berakhir pada 01:02, tanpa indikator kemajuan maupun galat. Penguji melaporkan kondisi ini bertahan selama berjam-jam. Setelah muat ulang (Rec5), pendaftaran selesai dalam sekitar 5 detik dan notifikasi <code>Trader registered</code> muncul pada 00:19.</dd>
+        <dt>Frekuensi</dt><dd>1 dari 1 percobaan pertama macet; 1 dari 1 percobaan setelah muat ulang berhasil.</dd>
+        <dt>Akar penyebab</dt><dd>Hipotesis: klien menunggu peristiwa konfirmasi yang terlewat, atau transaksi tidak pernah terkirim, dan tidak ada batas waktu. Setelah muat ulang, pencarian akun menemukan status yang sudah selesai atau masih tertunda.</dd>
+        <dt>Risiko</dt><dd>Perps tidak dapat diakses oleh pengguna baru hingga mereka terpikir untuk memuat ulang. Biaya sewa kemungkinan sudah dibayarkan.</dd>
+        <dt>Rekomendasi</dt><dd>Lakukan polling terhadap alamat akun setelah pengiriman, tetapkan batas waktu sekitar 30 detik, lalu tampilkan signature beserta "Check again" dan "Retry". Saat halaman dimuat, deteksi akun trader yang sudah ada sebelum menawarkan Register.</dd>
+      </dl>
+      <figure class="wide clip">
+        <video controls muted preload="metadata" playsinline><source src="clips/a08.mp4" type="video/mp4">clips/a08.mp4</video>
+        <figcaption>Klip sorotan untuk A-08, dipotong pada momen-momen kunci dan tanpa suara. Segmen: Rec3 00:30-01:02, Rec5 00:06-00:24. Rekaman lengkap tanpa potongan tersedia di bagian 9.</figcaption>
+      </figure>
+        <figure class="wide">
+          <img src="ev/b05-register.jpg" alt="Positions panel with the Registering button still pending">
+          <figcaption>Gambar A-08.1. Rec3 00:58. Registering sejak 00:36.</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Area Positions pada pasar perps untuk wallet yang belum terdaftar. Tertulis Register as a Phoenix trader to see positions dan Wallet EZTfnD...2uE74P needs ~0.02 SOL for rent and fees. Tombol hijau bertuliskan Registering... dan telah menampilkan teks tersebut sejak 00:36, tanpa indikator kemajuan, galat, maupun perkiraan waktu.</dd><dt>Tingkat keparahan</dt><dd>P2 (A-08). Perdagangan perps terblokir bagi pengguna baru, tetapi memuat ulang halaman dapat mengatasinya.</dd><dt>Penyebab</dt><dd>Aplikasi mengirimkan pendaftaran lalu menunggu peristiwa konfirmasi. Peristiwa tersebut terlewat atau tidak pernah dikirim, dan tidak ada batas waktu, sehingga status menunggu tidak pernah berakhir.</dd><dt>Potensi dampak</dt><dd>Pengguna baru sama sekali tidak dapat mengakses perdagangan perps. Penguji melaporkan tombol tetap pada status Registering selama berjam-jam. Biaya sewa akun mungkin sudah dibayarkan, sehingga pengguna juga dapat mengira dananya hilang.</dd><dt>Solusi</dt><dd>Setelah mengirimkan pendaftaran, periksa alamat akun on-chain setiap beberapa detik. Jika belum terkonfirmasi dalam sekitar 30 detik, tampilkan tautan transaksi beserta tombol Check again dan Retry.</dd><dt>Bukti</dt><dd>Cuplikan bingkai dari rekaman Rec3 pada 00:58 (berkas rec-3-perps-register.mp4, utuh dan tanpa suara). Buka rekaman pada bagian rekaman bukti dan putar mulai beberapa detik sebelum waktu ini untuk melihat urutan lengkap di sekitar bingkai tersebut.</dd><dt>Langkah reproduksi</dt><dd>1. Buka pasar perps mana pun. Tekan Register. 2. Tunggu dengan halaman tetap terbuka. 3. Muat ulang halaman dan tekan Register kembali.</dd><dt>Masukan untuk tim</dt><dd>Tidak boleh ada status menunggu yang berlangsung tanpa akhir. Tambahkan batas waktu, periksa akun langsung di chain, dan berikan langkah selanjutnya yang jelas kepada pengguna. Mendeteksi akun trader yang sudah ada saat halaman dimuat juga akan menghilangkan kebutuhan untuk memuat ulang.</dd></dl>
+        </figure>
+        <figure class="wide">
+          <img src="ev/b05-reload.jpg" alt="Trader registered toast after page reload">
+          <figcaption>Gambar A-08.2. Rec5 00:19. Setelah muat ulang, terdaftar dalam hitungan detik.</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Alur yang sama setelah halaman dimuat ulang sepenuhnya. Register ditekan kembali, dan beberapa detik kemudian muncul notifikasi Trader registered. Panel jaminan kini tersedia, menampilkan Available to deposit $15.41.</dd><dt>Tingkat keparahan</dt><dd>P2 (A-08). Gambar ini menunjukkan solusi sementara dan menegaskan penyebabnya.</dd><dt>Penyebab</dt><dd>Memuat ulang membuat aplikasi mencari akun dari awal, dan pencarian tersebut menemukan status yang sebenarnya. Hal ini menunjukkan bahwa masalah terletak pada logika menunggu di halaman, bukan pada blockchain.</dd><dt>Potensi dampak</dt><dd>Hal ini membuktikan bahwa pendaftaran dapat berhasil dalam sekitar 5 detik. Pengguna yang tidak terpikir untuk memuat ulang terjebak tanpa alasan.</dd><dt>Solusi</dt><dd>Saat halaman dimuat, periksa apakah akun trader sudah ada sebelum menampilkan tombol Register, dan terapkan batas waktu serta percobaan ulang sebagaimana diuraikan pada gambar A-08.1.</dd><dt>Bukti</dt><dd>Cuplikan bingkai dari rekaman Rec5 pada 00:19 (berkas rec-5-perps-orders.mp4, utuh dan tanpa suara). Buka rekaman pada bagian rekaman bukti dan putar mulai beberapa detik sebelum waktu ini untuk melihat urutan lengkap di sekitar bingkai tersebut.</dd><dt>Langkah reproduksi</dt><dd>1. Buka pasar perps mana pun. Tekan Register. 2. Tunggu dengan halaman tetap terbuka. 3. Muat ulang halaman dan tekan Register kembali.</dd><dt>Masukan untuk tim</dt><dd>Tidak boleh ada status menunggu yang berlangsung tanpa akhir. Tambahkan batas waktu, periksa akun langsung di chain, dan berikan langkah selanjutnya yang jelas kepada pengguna. Mendeteksi akun trader yang sudah ada saat halaman dimuat juga akan menghilangkan kebutuhan untuk memuat ulang.</dd></dl>
+        </figure>
+      <button class="jump" data-v="rec3" data-t="30">Putar Rec3 pada 00:30</button>
+      <button class="jump" data-v="rec5" data-t="8">Putar Rec5 pada 00:08</button>
+    </div>
+
+    <div class="rec">
+      <div class="hd">
+        <span class="id">A-09</span>
+        <span class="pill sev s2">P2 SEDANG</span>
+        <h3 style="flex:1 1 100%">Setoran kolateral pertama gagal: Quote not ready to sign</h3>
+      </div>
+      <dl class="fields">
+        <dt>Komponen</dt><dd>Deposit jaminan perps</dd>
+        <dt>Prasyarat</dt><dd>Trader terdaftar beberapa detik sebelumnya. Spot USDC 11.8, SOL 0.0611.</dd>
+        <dt>Langkah</dt>
+        <dd>
+          <ol class="steps">
+            <li>Segera setelah pendaftaran, depositkan seluruh jumlah yang tersedia (USD 15.41).</li>
+            <li>Amati notifikasi hasil.</li>
+            <li>Coba ulang dengan USD 10.</li>
+          </ol>
+        </dd>
+        <dt>Hasil yang diharapkan</dt><dd>Aksi deposit tidak tersedia hingga quote-nya siap, atau quote diambil saat tombol ditekan.</dd>
+        <dt>Hasil aktual</dt><dd>Notifikasi <code>Funding Failed</code>, USDC, USD 15.41, <code>Quote not ready to sign - refresh and try again</code>. Pada 00:48 deposit sebesar USD 10 berhasil dengan <code>Collateral Updated</code>.</dd>
+        <dt>Frekuensi</dt><dd>1 dari 2 percobaan deposit.</dd>
+        <dt>Akar penyebab</dt><dd>Hipotesis: jumlah yang tersedia (11.8 USDC ditambah 0.0611 SOL) memerlukan quote swap SOL ke USDC, yang masih dimuat ketika aksi sudah diaktifkan. USD 10 sudah tercukupi oleh USDC saja.</dd>
+        <dt>Risiko</dt><dd>Pendanaan pertama gagal tepat pada saat minat pengguna paling tinggi. Solusi sementara: coba ulang.</dd>
+        <dt>Rekomendasi</dt><dd>Nonaktifkan aksi selama quote masih tertunda dan beri label "Preparing quote". Jika tombol ditekan dengan quote yang sudah usang, ambil ulang quote dan lanjutkan alih-alih gagal.</dd>
+      </dl>
+      <figure class="wide clip">
+        <video controls muted preload="metadata" playsinline><source src="clips/a09.mp4" type="video/mp4">clips/a09.mp4</video>
+        <figcaption>Klip sorotan untuk A-09, dipotong pada momen-momen kunci dan tanpa suara. Segmen: Rec5 00:22-00:54. Rekaman lengkap tanpa potongan tersedia di bagian 9.</figcaption>
+      </figure>
+      <figure class="wide tall">
+        <img src="ev/b06-funding.jpg" alt="Funding Failed toast with Quote not ready to sign">
+        <figcaption>Gambar A-09.1. Rec5 00:28. Funding Failed: Quote not ready to sign.</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Notifikasi Funding Failed berwarna merah yang muncul segera setelah pendaftaran. Notifikasi mencantumkan Position USDC Long, Size $15.41, Price kosong, Order Type Market, dan alasan Quote not ready to sign - refresh and try again. $15.41 merupakan seluruh jumlah yang tersedia untuk deposit.</dd><dt>Tingkat keparahan</dt><dd>P2 (A-09). Deposit pertama gagal, tetapi percobaan ulang dengan jumlah lebih kecil berhasil 20 detik kemudian.</dd><dt>Penyebab</dt><dd>Jumlah yang tersedia terdiri atas 11.8 USDC ditambah 0.0611 SOL. Bagian SOL harus di-swap terlebih dahulu ke USDC, dan quote untuk swap tersebut masih dimuat ketika tombol deposit sudah aktif. Deposit berikutnya sebesar USD 10, yang tercukupi oleh USDC saja, berhasil.</dd><dt>Potensi dampak</dt><dd>Deposit pertama gagal tepat ketika pengguna paling bersemangat untuk mulai bertransaksi. Pesan tersebut juga meminta pengguna untuk melakukan refresh, yang merupakan instruksi teknis alih-alih langkah selanjutnya yang jelas.</dd><dt>Solusi</dt><dd>Pertahankan tombol deposit dalam keadaan nonaktif dengan label Preparing quote selama quote swap dimuat. Jika pengguna menekan tombol dengan quote yang sudah usang, ambil quote baru dan lanjutkan secara otomatis alih-alih gagal.</dd><dt>Bukti</dt><dd>Cuplikan bingkai dari rekaman Rec5 pada 00:28 (berkas rec-5-perps-orders.mp4, utuh dan tanpa suara). Buka rekaman pada bagian rekaman bukti dan putar mulai beberapa detik sebelum waktu ini untuk melihat urutan lengkap di sekitar bingkai tersebut.</dd><dt>Langkah reproduksi</dt><dd>1. Segera setelah pendaftaran, depositkan seluruh jumlah yang tersedia (USD 15.41). 2. Amati notifikasi hasil. 3. Coba ulang dengan USD 10.</dd><dt>Masukan untuk tim</dt><dd>Deposit pertama adalah saat trader baru memutuskan apakah akan bertahan. Jangan aktifkan tombol deposit hingga quote-nya siap, dan jika quote kedaluwarsa, ambil quote baru secara otomatis alih-alih meminta pengguna melakukan refresh.</dd></dl>
+      </figure>
+      <button class="jump" data-v="rec5" data-t="22">Putar Rec5 pada 00:22</button>
+    </div>
+
+    <div class="rec">
+      <div class="hd">
+        <span class="id">A-10</span>
+        <span class="pill sev s2">P2 SEDANG</span>
+        <h3 style="flex:1 1 100%">Tab posisi bertuliskan Positions (1) sementara daftar menampilkan No positions</h3>
+      </div>
+      <dl class="fields">
+        <dt>Komponen</dt><dd>Tabel posisi perps, filter pasar</dd>
+        <dt>Prasyarat</dt><dd>Satu posisi terbuka pada pasar selain pasar yang sedang dilihat.</dd>
+        <dt>Langkah</dt>
+        <dd>
+          <ol class="steps">
+            <li>Buka posisi SOL-PERP.</li>
+            <li>Pindah ke ETH-PERP.</li>
+            <li>Baca label tab Positions dan tabelnya.</li>
+          </ol>
+        </dd>
+        <dt>Hasil yang diharapkan</dt><dd>Jumlah dan daftar sesuai, atau filter menampilkan "1 position on other markets. Show all".</dd>
+        <dt>Hasil aktual</dt><dd>Label <code>Positions (1)</code>; filter secara default ETH; tabel menampilkan <code>No positions</code>. Memilih Both menampilkan posisi short SOL-PERP.</dd>
+        <dt>Frekuensi</dt><dd>Deterministik, merupakan akibat dari nilai default filter.</dd>
+        <dt>Akar penyebab</dt><dd>Jumlah dihitung di seluruh pasar; daftar difilter untuk pasar saat ini.</dd>
+        <dt>Risiko</dt><dd>Pengguna mengira posisi terbuka ber-leverage telah hilang, dan dapat membuka posisi penyeimbang di pasar yang salah. Dikombinasikan dengan A-05, hal ini membuat perubahan posisi yang sebenarnya tidak dapat diverifikasi dari satu layar.</dd>
+        <dt>Rekomendasi</dt><dd>Tetapkan filter default ke All, atau batasi jumlah sesuai filter dan tambahkan tautan "Show all" apabila terdapat posisi di pasar lain. Tampilkan jumlah posisi terbuka di samping setiap pasar pada daftar pasar, misalnya SOL-PERP (1), agar trader dapat melihat di mana posisi terbuka.</dd>
+      </dl>
+      <figure class="wide">
+        <img src="ev/a10-1-count.jpg" alt="Positions tab with count one and empty table">
+        <figcaption>Gambar A-10.1. Tangkapan layar 22:14, ETH-PERP. Tab tertulis Positions (1); tabel tertulis No positions.</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Area Positions saat melihat ETH-PERP. Label tab tertulis Positions (1), yang menyatakan terdapat satu posisi terbuka, tetapi tabel di bawahnya tertulis No positions. Filter pasar diatur ke ETH.</dd><dt>Tingkat keparahan</dt><dd>P2 (A-10). Posisi tidak hilang dan dapat ditemukan dengan mengubah filter, sehingga tersedia solusi sementara.</dd><dt>Penyebab</dt><dd>Angka pada label tab menghitung posisi di seluruh pasar, sedangkan tabel difilter untuk pasar yang sedang tampil di layar. Satu-satunya posisi terbuka berada di SOL-PERP, sehingga filter ETH menyembunyikannya.</dd><dt>Potensi dampak</dt><dd>Dua angka pada layar yang sama saling bertentangan. Pengguna dapat mengira posisi terbuka ber-leverage telah lenyap, dan dapat membuka transaksi penyeimbang di pasar yang salah. Bersama A-05, hal ini membuat status akun yang sebenarnya sangat sulit dipahami.</dd><dt>Solusi</dt><dd>Tetapkan filter default ke All, atau buat jumlah mengikuti filter yang aktif dan tambahkan baris seperti 1 position on other markets, Show all. Selain itu, tampilkan jumlah posisi terbuka di samping setiap pasar pada daftar pasar, misalnya SOL-PERP (1), agar pengguna dapat melihat sekilas di mana posisi terbuka.</dd><dt>Bukti</dt><dd>Tangkapan layar perangkat yang diambil pukul 22:14 pada 13 September 2026. Berkas disimpan tanpa penyuntingan bersama tangkapan layar asli sesi tersebut.</dd><dt>Langkah reproduksi</dt><dd>1. Buka posisi SOL-PERP. 2. Pindah ke ETH-PERP. 3. Baca label tab Positions dan tabelnya.</dd><dt>Masukan untuk tim</dt><dd>Angka pada tab dan daftar di bawahnya harus sesuai. Menetapkan default ke All, atau menampilkan jumlah posisi di pasar lain, serta menambahkan angka kecil di samping setiap nama pasar, akan memungkinkan trader menemukan setiap posisi terbuka secara sekilas.</dd></dl>
+      </figure>
+      <figure class="wide">
+        <img src="ev/a10-2-both.jpg" alt="Positions table with filter Both showing a SOL-PERP short">
+        <figcaption>Gambar A-10.2. Tangkapan layar 22:28. Filter Both menampilkan posisi short SOL-PERP.</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Area Positions yang sama dengan filter diubah ke Both. Tabel kini menampilkan SOL-PERP Short, Size 0.01 SOL, Position Value $1.01, Entry $100.38, Mark $100.53, Liq $105.37 dan uPnL -$0.015.</dd><dt>Tingkat keparahan</dt><dd>P2 (A-10). Gambar ini menegaskan bahwa posisi tersebut sejak awal memang ada.</dd><dt>Penyebab</dt><dd>Mengubah filter menghapus batasan pasar, sehingga posisi yang tersembunyi muncul.</dd><dt>Potensi dampak</dt><dd>Hal ini membuktikan bahwa No positions pada gambar A-10.1 disebabkan oleh nilai default filter, bukan oleh perubahan apa pun pada akun.</dd><dt>Solusi</dt><dd>Perbaikan sama dengan gambar A-10.1.</dd><dt>Bukti</dt><dd>Tangkapan layar perangkat yang diambil pukul 22:28 pada 13 September 2026. Berkas disimpan tanpa penyuntingan bersama tangkapan layar asli sesi tersebut.</dd><dt>Langkah reproduksi</dt><dd>1. Buka posisi SOL-PERP. 2. Pindah ke ETH-PERP. 3. Baca label tab Positions dan tabelnya.</dd><dt>Masukan untuk tim</dt><dd>Angka pada tab dan daftar di bawahnya harus sesuai. Menetapkan default ke All, atau menampilkan jumlah posisi di pasar lain, serta menambahkan angka kecil di samping setiap nama pasar, akan memungkinkan trader menemukan setiap posisi terbuka secara sekilas.</dd></dl>
+      </figure>
+    </div>
+
+    <div class="rec">
+      <div class="hd">
+        <span class="id">A-11</span>
+        <span class="pill sev s2">P2 SEDANG</span>
+        <h3 style="flex:1 1 100%">Grafik perps tidak memiliki pemilih maupun label interval candle</h3>
+      </div>
+      <dl class="fields">
+        <dt>Komponen</dt><dd>Toolbar grafik perps dan sumbu waktu</dd>
+        <dt>Langkah</dt>
+        <dd>
+          <ol class="steps">
+            <li>Buka pasangan spot dan perhatikan tombol interval di atas grafik.</li>
+            <li>Buka SOL-PERP.</li>
+            <li>Cari kontrol interval; ciutkan dan bentangkan sidebar; ketuk sebuah candle.</li>
+          </ol>
+        </dd>
+        <dt>Hasil yang diharapkan</dt><dd>Pemilih interval dan interval yang terlihat pada perps, sekurang-kurangnya setara dengan spot. Crosshair menampilkan tanggal dan waktu.</dd>
+        <dt>Hasil aktual</dt><dd>Spot menampilkan <code>1M 5M 15M 1H 4H 1D</code>. Perps tidak menampilkan satu pun, dan tidak ada label interval. Sumbu waktu mengulang angka hari (<code>13 13 13 13</code>) tanpa jam, dan mengetuk candle hanya menampilkan tanggal. Menampilkan atau menyembunyikan sidebar tidak memunculkan toolbar.</dd>
+        <dt>Frekuensi</dt><dd>Selalu terjadi. Seluruh pasar perps yang diamati.</dd>
+        <dt>Akar penyebab</dt><dd>Hipotesis: grafik perps merupakan komponen terpisah yang menetapkan interval secara tetap dan menggunakan formatter tick yang hanya menampilkan tanggal.</dd>
+        <dt>Risiko</dt><dd>Trader tidak dapat mengetahui apakah satu candle mewakili 1 menit atau 1 jam, sehingga keputusan atas struktur harga, stop, dan leverage bertumpu pada skala yang tidak diketahui. Tidak ada solusi sementara di dalam aplikasi.</dd>
+        <dt>Rekomendasi</dt><dd>Gunakan kembali kontrol interval spot pada perps, tampilkan interval aktif pada legenda grafik, dan format tick serta crosshair sebagai tanggal ditambah HH:mm untuk interval di bawah 1D.</dd>
+      </dl>
+      <figure class="wide clip">
+        <video controls muted preload="metadata" playsinline><source src="clips/a11.mp4" type="video/mp4">clips/a11.mp4</video>
+        <figcaption>Klip sorotan untuk A-11, dipotong pada momen-momen kunci dan tanpa suara. Segmen: Rec4 00:00-00:25. Rekaman lengkap tanpa potongan tersedia di bagian 9.</figcaption>
+      </figure>
+      <figure class="wide">
+        <img src="ev/a11-1-spot.jpg" alt="Spot chart toolbar with interval buttons">
+        <figcaption>Gambar A-11.1. Rec4 00:05. Grafik spot menyediakan 1M, 5M, 15M, 1H, 4H, 1D.</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Grafik harga suatu pasangan spot. Di atas grafik terdapat deretan tombol interval, yaitu 1M, 5M, 15M, 1H, 4H, dan 1D, dengan 5M disorot sebagai interval aktif, di samping opsi tampilan Price dan Mcap.</dd><dt>Tingkat keparahan</dt><dd>Acuan untuk A-11. Gambar ini memperlihatkan perilaku yang benar pada spot sebagai pembanding.</dd><dt>Penyebab</dt><dd>Spot menggunakan komponen grafik yang dilengkapi pemilih interval.</dd><dt>Potensi dampak</dt><dd>Hal ini menunjukkan bahwa produk telah memiliki kontrol interval yang berfungsi, sehingga penambahannya pada perps cukup dilakukan dengan penggunaan ulang.</dd><dt>Solusi</dt><dd>Gunakan kontrol yang sama pada grafik perps.</dd><dt>Bukti</dt><dd>Bingkai diambil dari rekaman Rec4 pada 00:05 (berkas rec-4-perps-timeframe.mp4, lengkap dan tanpa suara). Buka rekaman tersebut di bagian Rekaman bukti dan putar mulai beberapa detik sebelum waktu ini untuk melihat urutan lengkap di sekitar bingkai.</dd><dt>Langkah reproduksi</dt><dd>1. Buka pasangan spot dan perhatikan tombol interval di atas grafik. 2. Buka SOL-PERP. 3. Cari kontrol interval; ciutkan dan bentangkan sidebar; ketuk sebuah candle.</dd><dt>Masukan untuk tim</dt><dd>Trader perps lebih bergantung pada kerangka waktu pendek dibandingkan trader spot. Menghadirkan tombol interval spot pada grafik perps dan menampilkan jam serta menit pada sumbu waktu merupakan perubahan kecil dengan dampak besar terhadap kepercayaan pengguna.</dd></dl>
+      </figure>
+      <figure class="wide mid">
+        <img src="ev/a11-2-perps.jpg" alt="Perps chart with no interval control">
+        <figcaption>Gambar A-11.2. Rec4 00:17. Grafik perps tidak memiliki kontrol interval; sumbu mengulang angka 13.</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Grafik SOL-PERP. Bagian header menampilkan Mark $99.82, Index $99.73, dan Funding 0.3495%, tetapi tidak terdapat pemilih interval maupun label yang menyatakan interval yang ditampilkan. Sumbu waktu di bagian bawah mengulang angka tanggal 13 beberapa kali tanpa jam atau menit, dan mengetuk sebuah candle hanya menampilkan tanggal. Menciutkan dan membuka sidebar tidak memunculkan toolbar.</dd><dt>Tingkat keparahan</dt><dd>P2 (A-11). Grafik berfungsi tetapi tidak dapat dibaca dengan benar, dan tidak ada solusi sementara di dalam aplikasi.</dd><dt>Penyebab</dt><dd>Grafik perps menggunakan komponen terpisah dengan interval tetap dan format sumbu yang hanya menampilkan tanggal.</dd><dt>Potensi dampak</dt><dd>Trader yang menggunakan leverage tidak dapat mengetahui apakah setiap candle mewakili satu menit atau satu jam. Support dan resistance, penempatan stop, serta pilihan leverage seluruhnya bergantung pada skala tersebut, sehingga keputusan diambil atas dasar yang tidak diketahui. Tidak lazim bagi perps, yang paling membutuhkan interval pendek, memiliki kontrol grafik lebih sedikit daripada spot.</dd><dt>Solusi</dt><dd>Tambahkan pemilih interval yang sama seperti pada spot, tampilkan interval aktif pada legenda grafik, dan format sumbu waktu serta crosshair sebagai tanggal ditambah jam dan menit untuk interval yang lebih pendek dari satu hari.</dd><dt>Bukti</dt><dd>Bingkai diambil dari rekaman Rec4 pada 00:17 (berkas rec-4-perps-timeframe.mp4, lengkap dan tanpa suara). Buka rekaman tersebut di bagian Rekaman bukti dan putar mulai beberapa detik sebelum waktu ini untuk melihat urutan lengkap di sekitar bingkai.</dd><dt>Langkah reproduksi</dt><dd>1. Buka pasangan spot dan perhatikan tombol interval di atas grafik. 2. Buka SOL-PERP. 3. Cari kontrol interval; ciutkan dan bentangkan sidebar; ketuk sebuah candle.</dd><dt>Masukan untuk tim</dt><dd>Trader perps lebih bergantung pada kerangka waktu pendek dibandingkan trader spot. Menghadirkan tombol interval spot pada grafik perps dan menampilkan jam serta menit pada sumbu waktu merupakan perubahan kecil dengan dampak besar terhadap kepercayaan pengguna.</dd></dl>
+      </figure>
+      <button class="jump" data-v="rec4" data-t="0">Putar Rec4 pada 00:00</button>
+    </div>
+
+    <div class="rec">
+      <div class="hd">
+        <span class="id">A-12</span>
+        <span class="pill sev s3">P3 MINOR</span>
+        <h3 style="flex:1 1 100%">Jumlah jual kosong memunculkan No SOL balance to sell padahal saldo tersedia</h3>
+      </div>
+      <dl class="fields">
+        <dt>Komponen</dt><dd>Panel order spot, tab Sell, teks validasi</dd>
+        <dt>Langkah</dt>
+        <dd>
+          <ol class="steps">
+            <li>Miliki SOL. Buka pasangan SOL, tab Sell.</li>
+            <li>Biarkan jumlah pada 0.</li>
+          </ol>
+        </dd>
+        <dt>Hasil yang diharapkan</dt><dd>Tidak ada galat untuk kolom kosong, atau "Enter an amount".</dd>
+        <dt>Hasil aktual</dt><dd><code>Your balance 0.063742 SOL</code> dan, tepat di bawah kolom input, <code>No SOL balance to sell</code>.</dd>
+        <dt>Frekuensi</dt><dd>Selalu terjadi dengan jumlah kosong.</dd>
+        <dt>Akar penyebab</dt><dd>Pemeriksaan jumlah nol menggunakan kembali pesan untuk saldo nol.</dd>
+        <dt>Rekomendasi</dt><dd>Pisahkan kedua validasi beserta teksnya.</dd>
+      </dl>
+      <figure class="wide clip">
+        <video controls muted preload="metadata" playsinline><source src="clips/a12.mp4" type="video/mp4">clips/a12.mp4</video>
+        <figcaption>Klip sorotan untuk A-12, dipotong pada momen-momen kunci dan tanpa suara. Segmen: Rec1 00:58-01:04. Rekaman lengkap tanpa potongan tersedia di bagian 9.</figcaption>
+      </figure>
+      <figure class="wide tall">
+        <img src="ev/a12-1-copy.jpg" alt="Sell panel with empty amount and No SOL balance to sell">
+        <figcaption>Gambar A-12.1. Rec1 01:00. Saldo 0.063742 SOL di atas pesan No SOL balance to sell.</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Tab Sell pada pasangan SOL dengan kolom jumlah dibiarkan 0. Panel menampilkan Your balance 0.063742 SOL di bagian atas, dan tepat di bawah kolom jumlah tercetak No SOL balance to sell berwarna merah. Tombol Sell SOL tampak redup.</dd><dt>Tingkat keparahan</dt><dd>P3 (A-12). Ini merupakan pesan yang keliru dan tidak memengaruhi dana.</dd><dt>Penyebab</dt><dd>Pemeriksaan jumlah kosong menggunakan kembali pesan yang ditulis untuk saldo kosong. Kedua kondisi tersebut berbeda tetapi berbagi satu teks yang sama.</dd><dt>Potensi dampak</dt><dd>Pesan tersebut memberi tahu pengguna bahwa mereka tidak memiliki SOL, sementara panel yang sama menampilkan saldo positif. Hal ini dapat membuat pengguna mengira dana mereka hilang dan memicu permintaan dukungan yang tidak perlu.</dd><dt>Solusi</dt><dd>Gunakan pesan terpisah untuk jumlah kosong, misalnya Enter an amount, dan gunakan No SOL balance to sell hanya untuk saldo yang benar-benar nol.</dd><dt>Bukti</dt><dd>Bingkai diambil dari rekaman Rec1 pada 01:00 (berkas rec-1-spot-max.mp4, lengkap dan tanpa suara). Buka rekaman tersebut di bagian Rekaman bukti dan putar mulai beberapa detik sebelum waktu ini untuk melihat urutan lengkap di sekitar bingkai.</dd><dt>Langkah reproduksi</dt><dd>1. Miliki SOL. Buka pasangan SOL, tab Sell. 2. Biarkan jumlah pada 0.</dd><dt>Masukan untuk tim</dt><dd>Teks galat seharusnya menjelaskan masalah yang sebenarnya. Pesan terpisah untuk jumlah kosong mencegah pengguna diberi tahu bahwa mereka tidak memiliki dana sementara saldo mereka terlihat di layar yang sama.</dd></dl>
+      </figure>
+      <button class="jump" data-v="rec1" data-t="59">Putar Rec1 pada 00:59</button>
+    </div>
+  </section>
+
+  <section class="pad">
+    <h2><span class="num">6</span>Usulan perbaikan</h2>
+    <p class="note" style="margin:0 0 1rem">Bukan cacat. Dicatat terpisah untuk ditinjau oleh tim produk.</p>
+    <dl class="fields">
+      <dt>I-01</dt><dd><strong>Take profit dan stop loss pada tiket order.</strong> Tiket perps menyediakan Market, Limit, dan Reduce only; tidak ada cara untuk memasang TP atau SL saat entry. Usulan: kolom TP dan SL saat entry dan pada posisi terbuka, ditambah take profit parsial bertahap (misalnya TP1 30 persen, TP2 30 persen, TP3 40 persen) yang jumlahnya harus 100 persen, masing-masing dipasang sebagai trigger reduce-only agar posisi tidak berbalik arah. Setelah TP1 terisi, tawarkan pemindahan SL ke harga entry.</dd>
+      <dt>I-02</dt><dd><strong>Garis posisi pada grafik.</strong> Dengan posisi long SOL-PERP terbuka pada 100.36 dan grafik SOL-PERP di layar (Rec5 01:12), grafik tidak menampilkan garis entry maupun garis order; satu-satunya catatan adalah tabel di bawahnya. Usulan: garis harga entry, TP, SL, dan likuidasi yang diwarnai sesuai sisi, dapat diseret untuk TP dan SL, dengan tombol Close sekali ketuk pada garis entry agar posisi dapat ditutup langsung dari grafik.</dd>
+      <dt>I-03</dt><dd><strong>Posisi hasil pada dialog konfirmasi.</strong> Posisi perps dihitung neto per pasar, sehingga order berlawanan dengan ukuran yang sama akan menutup posisi. Dialog pada Rec5 01:33 tidak menyatakan hal tersebut. Usulan: sebuah baris seperti <em>Closes your 0.01 SOL long. Resulting position: none</em>. Hal ini juga akan langsung mengungkap A-05 dan A-06.</dd>
+      <dt>I-04</dt><dd><strong>Latensi eksekusi.</strong> Diukur pada Rec5 dengan 4 fps: Place Short diketuk pada 01:34.8, Market Order Placed pada 01:35.7, sekitar 0.9 s hingga 1.2 s di layar. Penguji melaporkan lebih dari 1.2 s pada order lain. Usulan: publikasikan target p50 dan p95, tampilkan waktu pengisian pada toast, dan tampilkan baris pending optimistis dalam 100 ms selama penyelesaian berlangsung.</dd>
+      <dt>I-05</dt><dd><strong>Kedalaman order book.</strong> Tangkapan layar 22:14 menunjukkan bar kedalaman yang diskalakan per level: 226.951 dan 119.416 terlihat, sedangkan level 3 hingga 45 nyaris tidak tampak, dan kolom Size tidak memiliki satuan. Usulan: bar kedalaman kumulatif, satuan pada header dengan pengalih base atau USD, serta baris spread di antara bid dan ask.</dd>
+      <dt>I-06</dt><dd><strong>Tujuan collateral di layar.</strong> Blok Collateral menampilkan jumlah yang tersedia dan aksi Swap and deposit, tetapi tidak menjelaskan apa yang dijamin oleh collateral tersebut. Dalam mode cross, satu pool menjamin seluruh posisi, sehingga kerugian pada satu posisi mengurangi margin untuk semua posisi. Usulan: satu baris di bawah Collateral, misalnya <em>Backs all cross positions</em>, ditambah angka Used dan Free per posisi pada tabel posisi.</dd>
+      <dt>I-07</dt><dd><strong>Jelaskan pasar khusus isolated pada badge.</strong> GOLD, SILVER, dan COPPER memiliki badge ISO pada daftar pasar; alasannya hanya muncul di dalam tiket (Rec3 00:08). Usulan: tooltip pada badge dengan teks yang sama, sehingga batasan tersebut diketahui sebelum pasar dibuka.</dd>
+      <dt>I-08</dt><dd><strong>Jelaskan registrasi sebelum tombol diketuk.</strong> Tombol Register mengikuti teks "needs ~0.02 SOL for rent and fees", tetapi tidak menyatakan bahwa trading perps memerlukan akun trader Phoenix on-chain yang dibuat satu kali. Usulan: penjelasan singkat dan biaya pasti pada dialog konfirmasi, ditampilkan sekali per wallet.</dd>
+      <dt>I-09</dt><dd><strong>Bedakan transaksi pasar dari transaksi milik sendiri.</strong> Tab Trades di samping order book mencantumkan seluruh transaksi pasar, sedangkan pengisian milik pengguna berada di Trade History. Kedua nama tersebut mirip. Usulan: ubah nama menjadi Market trades dan My trades, serta tambahkan label venue, misalnya "Phoenix", pada daftar transaksi pasar.</dd>
+      <dt>I-10</dt><dd><strong>Grafik layar penuh dengan alat analisis.</strong> Grafik hanya menyajikan harga dan waktu, tanpa indikator atau alat gambar, dan tanpa mode layar penuh. Usulan: tampilan layar penuh dengan indikator inti (volume, moving average, RSI) dan alat gambar dasar (garis horizontal, garis tren), baik melalui pustaka grafik berlisensi maupun subset bawaan.</dd>
+      <dt>I-11</dt><dd><strong>Arahkan pemegang aset lain ke perps.</strong> Perps menerima USDC. Wallet yang memegang USDT dan SOL (Rec2 01:20) melihat "Deposit USDC to trade" tanpa diberi tahu bahwa USDT dan SOL miliknya dapat dikonversi dalam satu langkah. Usulan: ketika USDC kurang, tampilkan "You hold 2 USDT and 0.06 SOL. Swap and deposit" sebagai aksi utama pada tiket.</dd>
+    </dl>
+      <figure class="wide">
+        <img src="ev/i02-chart.jpg" alt="SOL-PERP chart and positions table with an open long and no chart line">
+        <figcaption>Gambar I-02. Rec5 01:12. Grafik SOL-PERP dengan posisi long SOL-PERP terbuka pada 100.36: tidak ada garis entry.</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Layar trading SOL-PERP saat posisi long terbuka. Tabel posisi di bagian bawah mencantumkan SOL-PERP Long, Size 0.01 SOL, Entry $100.36, dan Liq $95.36. Grafik di atasnya hanya menampilkan candle harga dan garis putus-putus untuk harga terakhir pada 100.19. Tidak ada garis yang menandai harga entry maupun harga likuidasi. Tidak ada pula cara untuk bertindak atas posisi dari grafik: posisi tidak dapat ditutup atau diubah dengan sekali ketuk dari area harga.</dd><dt>Tingkat keparahan</dt><dd>Usulan perbaikan I-02. Ini merupakan fitur yang belum tersedia, bukan cacat.</dd><dt>Penyebab</dt><dd>Grafik tidak menggambar overlay apa pun untuk posisi atau order milik pengguna.</dd><dt>Potensi dampak</dt><dd>Trader tidak dapat melihat pada skala harga di mana mereka melakukan entry, seberapa jauh harga dari likuidasi, atau posisi mana yang terbuka, tanpa membaca tabel. Sebagian besar platform perps dan forex menggambar garis-garis ini, sehingga ketiadaannya membuat produk terasa belum lengkap bagi trader berpengalaman. Menutup posisi mengharuskan pengguna membuka tabel posisi, yang lambat ketika harga sedang bergerak.</dd><dt>Solusi</dt><dd>Gambarkan satu garis untuk harga entry dan satu untuk harga likuidasi setiap posisi terbuka, diwarnai sesuai long atau short, dan pasang tombol Close kecil pada garis entry agar posisi dapat ditutup dengan sekali ketuk dari grafik. Ketika take profit dan stop loss ditambahkan (I-01), gambarkan keduanya sebagai garis yang dapat diseret untuk mengubah level.</dd><dt>Bukti</dt><dd>Frame diambil dari rekaman Rec5 pada 01:12 (file rec-5-perps-orders.mp4, lengkap dan tanpa suara). Buka rekaman pada bagian Rekaman bukti dan putar mulai beberapa detik sebelum waktu tersebut untuk melihat rangkaian lengkap di sekitar frame.</dd><dt>Langkah reproduksi</dt><dd>1. Buka pasar perps dan tempatkan market order kecil. 2. Amati grafik dan order book selama posisi terbuka. 3. Bandingkan dengan perilaku yang diharapkan sebagaimana dijelaskan pada Solusi.</dd><dt>Masukan untuk tim</dt><dd>Garis grafik untuk entry, likuidasi, take profit, dan stop loss, dengan tombol Close pada garis entry, merupakan standar pada platform trading dan akan memungkinkan pengguna mengelola posisi tanpa meninggalkan grafik.</dd></dl>
+      </figure>
+      <figure class="wide tall">
+        <img src="ev/i05-book.jpg" alt="Order book bid side">
+        <figcaption>Gambar I-05. Tangkapan layar 22:14. Bid ETH-PERP: bar per level, tanpa satuan ukuran.</figcaption>
+        <dl class="fnote"><dt>Yang ditampilkan</dt><dd>Sisi bid pada order book ETH-PERP. Sebagian besar level harga menampilkan ukuran antara 2 dan 45, tetapi bar di belakangnya nyaris tidak terlihat, sementara dua level dengan 226.951 dan 119.416 memiliki bar yang sangat lebar. Header kolom Size tidak menyatakan apakah angka tersebut dalam ETH atau USD.</dd><dt>Tingkat keparahan</dt><dd>Usulan perbaikan I-05. Hal ini menyangkut keterbacaan, bukan cacat. Ukuran yang sama berulang di beberapa level merupakan pola market maker yang wajar.</dd><dt>Penyebab</dt><dd>Setiap bar diskalakan terhadap satu level terbesar, sehingga satu order besar memampatkan semua bar lainnya, dan satuan kolom ukuran tidak diberi label.</dd><dt>Potensi dampak</dt><dd>Pengguna tidak dapat menilai secara sekilas seberapa besar likuiditas di sekitar harga saat ini, dan sebagian mungkin menyimpulkan bahwa pasar sepi atau order book rusak.</dd><dt>Solusi</dt><dd>Gunakan bar kedalaman kumulatif yang tumbuh dari harga terbaik ke arah luar, tambahkan satuan pada header Size dengan pengalih antara ETH dan USD, dan tampilkan spread antara bid terbaik dan ask terbaik.</dd><dt>Bukti</dt><dd>Tangkapan layar perangkat yang diambil pukul 22:14 pada 13 September 2026. Berkas disimpan tanpa penyuntingan bersama tangkapan layar asli sesi tersebut.</dd><dt>Langkah reproduksi</dt><dd>1. Buka pasar perps dan tempatkan market order kecil. 2. Amati grafik dan order book selama posisi terbuka. 3. Bandingkan dengan perilaku yang diharapkan sebagaimana dijelaskan pada Solusi.</dd><dt>Masukan untuk tim</dt><dd>Bar kedalaman kumulatif dan kolom ukuran berlabel akan membuat likuiditas mudah dibaca dan mencegah pengguna keliru menyimpulkan bahwa pasar sepi.</dd></dl>
+      </figure>
+  </section>
+
+  <section class="pad">
+    <h2><span class="num">7</span>Terkonfirmasi berfungsi</h2>
+    <dl class="fields">
+      <dt>O-01</dt><dd><strong>Tidak ada permintaan wallet untuk setiap transaksi.</strong> Registrasi, deposit collateral, long, short, dan close seluruhnya dieksekusi dari tombol di dalam aplikasi tanpa popup tanda tangan (Rec5 00:19 hingga 02:14). Hal ini menghilangkan hambatan utama trading on-chain dan perlu dipertahankan sebagai acuan uji regresi.</dd>
+      <dt>O-02</dt><dd><strong>Penanganan kekurangan dana pada rute Relay.</strong> Rute lintas rantai menonaktifkan Buy dan menjelaskan lokasi dana (Rec1 00:56). Ini merupakan perilaku acuan untuk A-01.</dd>
+    </dl>
+  </section>
+
+  <section class="pad">
+    <h2><span class="num">8</span>Urutan perbaikan yang direkomendasikan</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Urutan</th><th>ID</th><th>Alasan</th><th>Estimasi upaya</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">1</td><td class="mono">A-05, A-13</td><td>Kemungkinan order nyata terduplikasi; pengisian yang dilaporkan keliru telah menimbulkan posisi yang tidak diinginkan. Keduanya berbagi jalur trader state 429, sehingga perbaiki retry dan caching sekaligus.</td><td>Sedang</td></tr>
+          <tr><td class="mono">2</td><td class="mono">A-01</td><td>Perbaikan acuan sudah ada pada rute Relay.</td><td>Rendah</td></tr>
+          <tr><td class="mono">3</td><td class="mono">A-06</td><td>Baca lot size sekali; memperbaiki ukuran pada dialog dan toast.</td><td>Rendah</td></tr>
+          <tr><td class="mono">4</td><td class="mono">A-10</td><td>Satu perubahan nilai default; menghilangkan laporan posisi yang menghilang.</td><td>Rendah</td></tr>
+          <tr><td class="mono">5</td><td class="mono">A-02, A-12</td><td>Cadangan biaya dan teks galat berada dalam komponen yang sama.</td><td>Rendah</td></tr>
+          <tr><td class="mono">6</td><td class="mono">A-08, A-09</td><td>Onboarding: timeout dan kesiapan quote.</td><td>Sedang</td></tr>
+          <tr><td class="mono">7</td><td class="mono">A-11</td><td>Gunakan kembali kontrol interval spot.</td><td>Sedang</td></tr>
+          <tr><td class="mono">8</td><td class="mono">A-04</td><td>Murah; menuntaskan rantai retry bersama A-01.</td><td>Rendah</td></tr>
+          <tr><td class="mono">9</td><td class="mono">A-03, A-07</td><td>Status galat bersama pada lapisan data.</td><td>Sedang</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="pad">
+    <h2><span class="num">9</span>Rekaman bukti</h2>
+    <dl class="fields" style="margin-bottom:0.4rem">
+      <dt>Penyuntingan</dt><dd>Tersedia dua set. Setiap catatan cacat menyematkan klip sorotan singkat yang dipotong pada momen-momen kunci. Bagian ini memuat setiap rekaman secara lengkap, tanpa ada yang dihapus, diubah urutannya, atau dipangkas, sehingga klip dapat diperiksa terhadap konteks lengkapnya. Seluruh berkas telah di-encode ulang ke lebar 1280 px.</dd>
+      <dt>Audio</dt><dd>Dihapus dari seluruh berkas. Hanya aliran video.</dd>
+      <dt>Navigasi</dt><dd>Tombol Play pada setiap catatan melompat ke momen yang relevan. Indeks hanya merupakan alat bantu, bukan pengganti peninjauan menyeluruh.</dd>
+    </dl>
+
+    <div class="vid">
+      <h3>Rec0. Panel order spot, 8 Sep 2026, 103.5 s</h3>
+      <video id="rec0" controls muted preload="metadata" poster="f_030.jpg"><source src="spot-session-full.mp4" type="video/mp4">spot-session-full.mp4</video>
+      <div class="scroll"><table style="margin-top:0.6rem">
+        <thead><tr><th>Waktu</th><th>ID</th><th>Pengamatan</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">00:00</td><td class="mono">A-01</td><td>USDC 0, dimasukkan 50. Peringatan muncul, Buy aktif.</td></tr>
+          <tr><td class="mono">00:18</td><td class="mono">-</td><td>Sell 0.05 SOL diterima.</td></tr>
+          <tr><td class="mono">00:22</td><td class="mono">A-04</td><td>Swap Success; saldo masih lama.</td></tr>
+          <tr><td class="mono">00:30</td><td class="mono">A-04</td><td>Saldo terkoreksi, sekitar 8 s kemudian.</td></tr>
+          <tr><td class="mono">00:58</td><td class="mono">A-02</td><td>Max mengisi 0.137792 SOL; Sell nonaktif selama 14 s.</td></tr>
+          <tr><td class="mono">01:14</td><td class="mono">A-03</td><td>Panel Trades DEGRADED.</td></tr>
+          <tr><td class="mono">01:18</td><td class="mono">A-02</td><td>75 persen mengaktifkan Sell.</td></tr>
+          <tr><td class="mono">01:22</td><td class="mono">A-03</td><td>Kolom quote kosong; grafik tetap berjalan.</td></tr>
+          <tr><td class="mono">01:30</td><td class="mono">A-01</td><td>USDC 13.8, dimasukkan 50. Kondisi sama.</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="vid">
+      <h3>Rec1. Rute spot dan Max, 13 Sep 2026 20:48, 80.5 s</h3>
+      <video id="rec1" controls muted preload="metadata"><source src="rec-1-spot-max.mp4" type="video/mp4">rec-1-spot-max.mp4</video>
+      <div class="scroll"><table style="margin-top:0.6rem">
+        <thead><tr><th>Waktu</th><th>ID</th><th>Pengamatan</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">00:00-00:12</td><td class="mono">A-01</td><td>Tulip, USDC 13.8, dimasukkan 50. Peringatan muncul, Buy Tulip aktif.</td></tr>
+          <tr><td class="mono">00:16-00:44</td><td class="mono">-</td><td>Pasangan Base ETH dan HyperEVM HYPE ditelusuri.</td></tr>
+          <tr><td class="mono">00:56</td><td class="mono">O-02</td><td>Arbitrum ETH melalui Relay: pesan kekurangan dana, Buy nonaktif.</td></tr>
+          <tr><td class="mono">01:00</td><td class="mono">A-12</td><td>Sell SOL, jumlah 0: No SOL balance to sell.</td></tr>
+          <tr><td class="mono">01:04</td><td class="mono">A-02</td><td>Max 0.063742 SOL: Jupiter quote 400.</td></tr>
+          <tr><td class="mono">01:08</td><td class="mono">-</td><td>Menu wallet dibuka dan ditutup.</td></tr>
+          <tr><td class="mono">01:14</td><td class="mono">A-02</td><td>75 persen, 0.047807 SOL: tidak ada quote.</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="vid">
+      <h3>Rec2. Saldo, portofolio, dan masuk ke perps, 13 Sep 2026 20:49, 127.7 s</h3>
+      <video id="rec2" controls muted preload="metadata"><source src="rec-2-balances-perps.mp4" type="video/mp4">rec-2-balances-perps.mp4</video>
+      <div class="scroll"><table style="margin-top:0.6rem">
+        <thead><tr><th>Waktu</th><th>ID</th><th>Pengamatan</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">00:00-00:28</td><td class="mono">A-02</td><td>Jupiter quote 400 tetap muncul, termasuk pada 25 persen. Solscan diperiksa di sela-selanya.</td></tr>
+          <tr><td class="mono">00:32-01:08</td><td class="mono">-</td><td>Buy 1 USDT dua kali. Swap Success; USDC 13.8 menjadi 11.8. Situs Tether dibuka.</td></tr>
+          <tr><td class="mono">01:12-01:16</td><td class="mono">-</td><td>SOL-PERP: Register sebagai trader Phoenix.</td></tr>
+          <tr><td class="mono">01:20-01:32</td><td class="mono">-</td><td>Portofolio: spot USD 19.88 dalam USDC, SOL, dan USDT; collateral perps kosong; dialog Transfer.</td></tr>
+          <tr><td class="mono">01:40</td><td class="mono">-</td><td>Pencarian pasar untuk "us" tidak menghasilkan apa pun.</td></tr>
+          <tr><td class="mono">01:48-02:04</td><td class="mono">A-07</td><td>AAPL-PERP; daftar pasar berubah menjadi No markets in this category.</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="vid">
+      <h3>Rec3. Pasar perps dan registrasi, 13 Sep 2026 21:04, 62.0 s</h3>
+      <video id="rec3" controls muted preload="metadata"><source src="rec-3-perps-register.mp4" type="video/mp4">rec-3-perps-register.mp4</video>
+      <div class="scroll"><table style="margin-top:0.6rem">
+        <thead><tr><th>Waktu</th><th>ID</th><th>Pengamatan</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">00:00-00:16</td><td class="mono">I-01</td><td>Tiket SILVER-PERP: Market, Limit, Reduce only. Tidak ada TP atau SL.</td></tr>
+          <tr><td class="mono">00:20-00:32</td><td class="mono">-</td><td>Tiket SOL-PERP, Register to trade.</td></tr>
+          <tr><td class="mono">00:36-01:02</td><td class="mono">A-08</td><td>Registering... tanpa kemajuan hingga akhir rekaman.</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="vid">
+      <h3>Rec4. Interval grafik, 13 Sep 2026 21:17, 26.0 s</h3>
+      <video id="rec4" controls muted preload="metadata"><source src="rec-4-perps-timeframe.mp4" type="video/mp4">rec-4-perps-timeframe.mp4</video>
+      <div class="scroll"><table style="margin-top:0.6rem">
+        <thead><tr><th>Waktu</th><th>ID</th><th>Pengamatan</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">00:00</td><td class="mono">A-11</td><td>Grafik SOL-PERP, tidak ada kontrol interval.</td></tr>
+          <tr><td class="mono">00:04-00:08</td><td class="mono">A-11, A-01</td><td>Spot USDT sebagai pembanding: tombol interval tersedia. Buy USDT aktif di samping Not enough USDC.</td></tr>
+          <tr><td class="mono">00:12-00:24</td><td class="mono">A-11</td><td>Kembali ke SOL-PERP; sidebar diubah; sumbu hanya menampilkan angka tanggal.</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="vid">
+      <h3>Rec5. Order perps, 13 Sep 2026 22:09, 136.3 s</h3>
+      <video id="rec5" controls muted preload="metadata"><source src="rec-5-perps-orders.mp4" type="video/mp4">rec-5-perps-orders.mp4</video>
+      <div class="scroll"><table style="margin-top:0.6rem">
+        <thead><tr><th>Waktu</th><th>ID</th><th>Pengamatan</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">00:08-00:19</td><td class="mono">A-08</td><td>Setelah muat ulang: Register, lalu Trader registered.</td></tr>
+          <tr><td class="mono">00:28</td><td class="mono">A-09</td><td>Funding Failed, USD 15.41: Quote not ready to sign.</td></tr>
+          <tr><td class="mono">00:48-00:52</td><td class="mono">-</td><td>Collateral Updated, USD 10.</td></tr>
+          <tr><td class="mono">01:04-01:12</td><td class="mono">A-06, O-01</td><td>Confirm Long 0.012 SOL; tertempatkan; posisi 0.01 SOL. Tidak ada permintaan wallet.</td></tr>
+          <tr><td class="mono">01:33-01:36</td><td class="mono">A-05, I-03, I-04</td><td>Confirm Short 0.012 sekali; tertempatkan pada 01:35.7; Order Failed menumpuk pada 01:36.0; long tertutup.</td></tr>
+          <tr><td class="mono">01:36-01:45</td><td class="mono">A-05</td><td>Order Failed, Phoenix trader state 429, tetap muncul.</td></tr>
+          <tr><td class="mono">01:44-02:00</td><td class="mono">-</td><td>Tab Trades ditelusuri.</td></tr>
+          <tr><td class="mono">02:04-02:14</td><td class="mono">A-05, A-06</td><td>Short dinaikkan ke 1.3 USD; tertempatkan; short baru sebesar 0.01 SOL.</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <section class="pad">
+    <h2><span class="num">10</span>Batasan cakupan</h2>
+    <ul class="tight">
+      <li>Rekaman berasal dari satu perangkat dan satu browser. Tidak ada viewport desktop, tidak ada iOS, tidak ada wallet eksternal.</li>
+      <li>Tidak ada temuan yang dikorelasikan dengan log server atau riwayat transaksi lengkap. Akar masalah merupakan hipotesis berdasarkan perilaku yang diamati; A-05 memerlukan Trade History untuk memutuskan antara hipotesis A dan B.</li>
+      <li>Tanda tangan transaksi terpotong sebagaimana ditampilkan oleh aplikasi.</li>
+      <li>Rekaman berkecepatan 30 fps; cacat gerak yang lebih cepat dari itu tidak dapat diukur dari rekaman tersebut.</li>
+      <li>Tidak diuji: limit order, order isolated margin, likuidasi, penarikan, pembayaran funding, Rewards, Leaderboard, Card.</li>
+      <li>Tidak ada pengujian beban, konkurensi, atau input adversarial.</li>
+    </ul>
+    <p class="note">Area yang tercantum di atas belum diuji, bukan terverifikasi sehat.</p>
+  </section>
+
+  <section class="pad">
+    <h2><span class="num">11</span>Estimasi nilai temuan</h2>
+    <p class="note" style="margin:0 0 0.9rem">Estimasi pribadi penulis atas nilai setiap temuan, berdasarkan tingkat keparahan serta upaya untuk mereproduksi dan mendokumentasikannya. Tidak ada imbalan yang ditawarkan atau dijanjikan, dan tidak digunakan tarif perusahaan lain. Skenario atas mengasumsikan A-05 terkonfirmasi sebagai P0 dan seluruh usulan perbaikan diterima.</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Tingkat</th><th>ID</th><th>Jumlah</th><th>USDC per temuan</th><th>Subtotal</th></tr></thead>
+        <tbody>
+          <tr><td class="sev s0">P0</td><td class="mono">A-05 (jika terkonfirmasi)</td><td class="mono">1</td><td class="mono">150</td><td class="mono">150</td></tr>
+          <tr><td class="sev s1">P1</td><td class="mono">A-01, A-06</td><td class="mono">2</td><td class="mono">50</td><td class="mono">100</td></tr>
+          <tr><td class="sev s2">P2</td><td class="mono">A-02, A-03, A-07, A-08, A-09, A-10, A-11, A-13</td><td class="mono">8</td><td class="mono">20</td><td class="mono">160</td></tr>
+          <tr><td class="sev s3">P3</td><td class="mono">A-04, A-12</td><td class="mono">2</td><td class="mono">5</td><td class="mono">10</td></tr>
+          <tr><td class="mono">IMP</td><td class="mono">I-01 hingga I-11 (jika diterima)</td><td class="mono">11</td><td class="mono">5</td><td class="mono">55</td></tr>
+          <tr><td colspan="4"><strong>Estimasi atas</strong></td><td class="mono"><strong>475</strong></td></tr>
+          <tr><td colspan="4">Estimasi dasar: A-05 sebagai P1 senilai 50, usulan perbaikan tidak diterima</td><td class="mono">320</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <span>QA-2609-11 rev 4</span>
+  <span>13 cacat: 3 P1, 8 P2, 2 P3. 11 usulan perbaikan. Estimasi nilai hingga USDC 475.</span>
+  <span>Rahasia</span>
+</footer>
+
+<script>
+  // Play buttons seek the matching recording; the page stays usable without this script.
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest(".jump") : null;
+    if (!b) return;
+    var v = document.getElementById(b.getAttribute("data-v"));
+    if (!v) return;
+    v.scrollIntoView({ behavior: "smooth", block: "center" });
+    var t = parseFloat(b.getAttribute("data-t")) || 0;
+    var go = function () { v.currentTime = t; var p = v.play(); if (p && p.catch) p.catch(function () {}); };
+    if (v.readyState >= 1) go(); else v.addEventListener("loadedmetadata", go, { once: true });
+  });
+
+
+  // Sections fade in as they scroll into view; skipped when the reader prefers reduced motion.
+  (function () {
+    if (!("IntersectionObserver" in window)) return;
+    var els = document.querySelectorAll("section, .rec");
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+    }, { rootMargin: "0px 0px -8% 0px" });
+    els.forEach(function (el) { el.classList.add("reveal"); io.observe(el); });
+  })();
+</script>
+
+</body>
+</html>

@@ -132,6 +132,13 @@
   dl.fnote dt { color:var(--soft); font-size:0.66rem; letter-spacing:0.07em; text-transform:uppercase; padding-top:0.1rem; }
   dl.fnote dd { margin:0; }
   @media (max-width:34rem) { dl.fnote { grid-template-columns:1fr; } }
+  .langlink { font-family:"JetBrains Mono",monospace; font-size:0.72rem; color:var(--p2); border:1px solid var(--rule);
+              padding:0.12rem 0.5rem; margin-left:0.6rem; text-decoration:none; letter-spacing:0; text-transform:none; }
+  .langlink:hover { border-color:var(--p2); }
+  .walk { margin-top:1.2rem; }
+  .reveal { opacity:0; transform:translateY(14px); transition:opacity .6s ease, transform .6s ease; }
+  .reveal.in { opacity:1; transform:none; }
+  @media (prefers-reduced-motion: reduce) { .reveal { opacity:1; transform:none; transition:none; } }
   figure.tall { max-width:24rem; margin-left:auto; margin-right:auto; }
   figure.mid { max-width:34rem; margin-left:auto; margin-right:auto; }
 </style>
@@ -143,7 +150,7 @@
   <div class="pad masthead">
     <div class="line">
       <span>Defect report QA-2609-11</span>
-      <span>Revision 4 <button id="lang" class="jump" type="button" aria-label="Switch language">Bahasa Indonesia</button></span>
+      <span>Revision 4 <a class="langlink" href="/id" hreflang="id" lang="id">Bahasa Indonesia</a></span>
     </div>
     <div class="brand">
       <img src="ev/sana-icon.png" alt="Sana logo" width="56" height="56">
@@ -155,6 +162,10 @@
     <h1>sana.run Spot and Perps Trading Defect Report</h1>
     <p class="byline">Prepared for Sana (sana.run) by <strong>nayrbryanGaming</strong>. Independent QA report; not an official Sana publication.</p>
     <p class="classline">CONFIDENTIAL. Restricted to the engagement. Unfixed defects enclosed.</p>
+    <figure class="walk">
+      <video controls muted preload="metadata" playsinline poster="ev/walkthrough-poster.jpg"><source src="walkthrough.mp4" type="video/mp4">walkthrough.mp4</video>
+      <figcaption>Walkthrough video (95 s, muted, captioned in English and Indonesian): a guided tour of this report from start to finish.</figcaption>
+    </figure>
   </div>
 
   <section class="pad">
@@ -1014,30 +1025,15 @@
     if (v.readyState >= 1) go(); else v.addEventListener("loadedmetadata", go, { once: true });
   });
 
-  // Language switch: English is the default. Headings, field labels and figure analysis labels
-  // switch to Indonesian; record text stays in English as the reference version.
+
+  // Sections fade in as they scroll into view; skipped when the reader prefers reduced motion.
   (function () {
-    var ID = {"Document control":"Kontrol dokumen","Scope, environment and method":"Ruang lingkup, lingkungan dan metode","Severity and classification":"Tingkat keparahan dan klasifikasi","Finding register":"Daftar temuan","Defect records":"Rincian cacat","Improvement proposals":"Usulan perbaikan","Confirmed working":"Sudah berjalan baik","Recommended fix order":"Urutan perbaikan","Evidence recordings":"Rekaman bukti","Coverage limitations":"Keterbatasan pengujian","Estimated value of findings":"Estimasi nilai temuan",
-      "Component":"Komponen","Preconditions":"Prasyarat","Steps":"Langkah","Expected":"Diharapkan","Actual":"Kenyataan","Frequency":"Frekuensi","Root cause":"Penyebab","Risk":"Risiko","Recommendation":"Rekomendasi","Verification needed":"Verifikasi lanjutan","Regression risk":"Risiko regresi",
-      "What it shows":"Yang terlihat","Severity":"Tingkat","Cause":"Penyebab","Possible impact":"Kemungkinan dampak","Solution":"Solusi","Evidence":"Bukti","Steps to reproduce":"Langkah reproduksi","Feedback for the team":"Masukan untuk tim",
-      "Report ID":"ID laporan","Revision":"Revisi","Supersedes":"Menggantikan","Prepared for":"Disusun untuk","Author":"Penulis","Classification":"Klasifikasi","Distribution":"Distribusi","Status":"Status","Change summary":"Ringkasan perubahan","Components":"Komponen","Sessions":"Sesi","Device":"Perangkat","Wallet":"Dompet","Funds":"Dana","Method":"Metode","Transactions":"Transaksi","Not tested":"Tidak diuji","Editing":"Penyuntingan","Audio":"Audio","Navigation":"Navigasi"};
-    var nodes = document.querySelectorAll("h2, dt");
-    var orig = [];
-    nodes.forEach(function (n) {
-      var t = n.lastChild && n.lastChild.nodeType === 3 ? n.lastChild : null;
-      orig.push(t ? t.nodeValue : null);
-    });
-    var btn = document.getElementById("lang"), id = false;
-    btn.addEventListener("click", function () {
-      id = !id;
-      nodes.forEach(function (n, i) {
-        var t = n.lastChild && n.lastChild.nodeType === 3 ? n.lastChild : null;
-        if (!t || orig[i] == null) return;
-        t.nodeValue = id ? (ID[orig[i].trim()] || orig[i]) : orig[i];
-      });
-      document.documentElement.lang = id ? "id" : "en";
-      btn.textContent = id ? "English" : "Bahasa Indonesia";
-    });
+    if (!("IntersectionObserver" in window)) return;
+    var els = document.querySelectorAll("section, .rec");
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+    }, { rootMargin: "0px 0px -8% 0px" });
+    els.forEach(function (el) { el.classList.add("reveal"); io.observe(el); });
   })();
 </script>
 
