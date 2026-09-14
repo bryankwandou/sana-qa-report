@@ -1,0 +1,1045 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="ev/sana-icon.png">
+<title>QA-2609-11 Spot Order Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Public+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+
+<style>
+  /* Formal defect report. ASCII only, including comments, so no reader's software
+     has to guess an encoding. Fields over prose: every record is labelled data. */
+  :root {
+    --paper:#e9ebe7; --sheet:#fbfbf9; --ink:#15181b; --soft:#5a6066;
+    --rule:#c4c9c3; --faint:#dfe3de; --band:#f1f2ef;
+    --p0:#c0392b; --p1:#8a5d18; --p2:#33548c; --p3:#6d7370;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper:#121517; --sheet:#191d20; --ink:#e6e8e4; --soft:#949a9f;
+      --rule:#30363c; --faint:#242a2f; --band:#1f2428;
+      --p0:#e8705c; --p1:#cfa157; --p2:#7fa4de; --p3:#9aa19d;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper:#121517; --sheet:#191d20; --ink:#e6e8e4; --soft:#949a9f;
+    --rule:#30363c; --faint:#242a2f; --band:#1f2428;
+    --p0:#e8705c; --p1:#cfa157; --p2:#7fa4de; --p3:#9aa19d;
+  }
+
+  * { box-sizing:border-box; margin:0; }
+  body { background:var(--paper); color:var(--ink);
+         font-family:"Public Sans",ui-sans-serif,system-ui,sans-serif;
+         font-size:14.5px; line-height:1.55; }
+  .mono { font-family:"JetBrains Mono",ui-monospace,Menlo,monospace; font-variant-numeric:tabular-nums; }
+  .doc { max-width:54rem; margin:0 auto; background:var(--sheet);
+         border-left:1px solid var(--rule); border-right:1px solid var(--rule); }
+  .pad { padding:1.9rem 2.75rem; }
+  @media (max-width:44rem) { .pad { padding:1.25rem 1.1rem; } }
+
+  /* Masthead */
+  .masthead { border-bottom:2px solid var(--ink); }
+  .masthead .line { display:flex; flex-wrap:wrap; gap:0.5rem 1.5rem; justify-content:space-between;
+                    font-family:"JetBrains Mono",monospace; font-size:0.68rem;
+                    letter-spacing:0.12em; text-transform:uppercase; color:var(--soft); }
+  h1 { font-family:"Source Serif 4",Georgia,serif; font-weight:600;
+       font-size:1.7rem; line-height:1.2; margin:0.85rem 0 0; letter-spacing:-0.005em; }
+  .classline { margin-top:0.5rem; font-size:0.8rem; color:var(--p0); font-weight:600; }
+
+  h2 { font-family:"Source Serif 4",Georgia,serif; font-weight:600; font-size:1.05rem;
+       line-height:1.3; margin-bottom:0.7rem; }
+  h2 .num { font-family:"JetBrains Mono",monospace; font-size:0.78rem; color:var(--soft);
+            margin-right:0.7rem; font-weight:400; }
+  h3 { font-family:"Source Serif 4",Georgia,serif; font-size:1rem; font-weight:600; margin-bottom:0.15rem; }
+  section { border-top:1px solid var(--rule); }
+  p { margin:0; max-width:70ch; }
+
+  /* Field grid: the report's basic unit. Label left, value right, nothing else. */
+  dl.fields { display:grid; grid-template-columns:9.5rem 1fr; gap:0.3rem 1.25rem; font-size:0.85rem; }
+  dl.fields dt { color:var(--soft); font-size:0.7rem; letter-spacing:0.08em;
+                 text-transform:uppercase; padding-top:0.13rem; }
+  dl.fields dd { margin:0; max-width:68ch; }
+  @media (max-width:34rem) {
+    dl.fields { grid-template-columns:1fr; gap:0.1rem; }
+    dl.fields dt { margin-top:0.55rem; }
+  }
+
+  .scroll { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:0.82rem; }
+  th { text-align:left; font-weight:600; font-size:0.66rem; letter-spacing:0.1em;
+       text-transform:uppercase; color:var(--soft); padding:0.45rem 0.85rem 0.45rem 0;
+       border-bottom:1px solid var(--ink); white-space:nowrap; background:var(--band); }
+  th:first-child, td:first-child { padding-left:0.6rem; }
+  td { padding:0.5rem 0.85rem 0.5rem 0; border-bottom:1px solid var(--faint); vertical-align:top; }
+  th:last-child, td:last-child { padding-right:0.6rem; }
+  tbody tr:nth-child(even) { background:var(--band); }
+
+  .sev { font-family:"JetBrains Mono",monospace; font-weight:500; }
+  .sev.s0 { color:var(--p0); } .sev.s1 { color:var(--p1); }
+  .sev.s2 { color:var(--p2); } .sev.s3 { color:var(--p3); }
+
+  /* Defect record */
+  .rec { border-top:1px solid var(--faint); padding:1.5rem 2.75rem 1.7rem; }
+  .rec:first-of-type { border-top:0; }
+  @media (max-width:44rem) { .rec { padding:1.2rem 1.1rem 1.3rem; } }
+  .rec .hd { display:flex; align-items:baseline; gap:0.85rem; margin-bottom:0.9rem;
+             padding-bottom:0.55rem; border-bottom:1px solid var(--faint); flex-wrap:wrap; }
+  .rec .id { font-family:"JetBrains Mono",monospace; font-size:0.8rem; font-weight:500; }
+  .rec .pill { font-family:"JetBrains Mono",monospace; font-size:0.64rem; letter-spacing:0.09em;
+               padding:0.1rem 0.4rem; border:1px solid currentColor; }
+
+  ol.steps { margin:0; padding-left:1.15rem; }
+  ol.steps li { margin-bottom:0.15rem; }
+  code { font-family:"JetBrains Mono",monospace; font-size:0.88em; }
+
+  figure { margin:0; }
+  figure img { width:100%; display:block; border:1px solid var(--rule); }
+  figcaption { font-size:0.72rem; color:var(--soft); margin-top:0.35rem; }
+  .pair { display:grid; gap:0.85rem; margin-top:1.1rem; }
+  @media (min-width:44rem) { .pair { grid-template-columns:1fr 1fr; } }
+
+  video { width:100%; display:block; border:1px solid var(--rule); background:#000; }
+
+  ul.tight { margin:0; padding-left:1.15rem; font-size:0.88rem; }
+  ul.tight li { margin-bottom:0.22rem; }
+
+  footer { max-width:54rem; margin:0 auto; padding:1.1rem 2.75rem 2.5rem;
+           font-family:"JetBrains Mono",monospace; font-size:0.68rem; color:var(--soft);
+           display:flex; flex-wrap:wrap; gap:0.4rem 1.5rem; justify-content:space-between; }
+
+  /* Revision 4 additions */
+  .kind { font-family:"JetBrains Mono",monospace; font-size:0.64rem; letter-spacing:0.09em;
+          padding:0.1rem 0.4rem; border:1px solid var(--rule); color:var(--soft); }
+  .jump { font-family:"JetBrains Mono",monospace; font-size:0.72rem; background:none; cursor:pointer;
+          color:var(--p2); border:1px solid var(--rule); padding:0.12rem 0.45rem; margin:0.15rem 0.3rem 0 0; }
+  .jump:hover { border-color:var(--p2); }
+  figure.wide { margin-top:1.1rem; }
+  .note { font-size:0.82rem; color:var(--soft); margin-top:0.8rem; }
+  .vid { margin-top:1.4rem; }
+  .vid h3 { margin-bottom:0.45rem; }
+  .ok { color:var(--p2); }
+  td.mono, td.sev { white-space:nowrap; }
+  .brand { display:flex; align-items:center; gap:0.8rem; margin-top:1rem; }
+  .brand img { width:56px; height:56px; border-radius:12px; display:block; }
+  .brand-name { font-family:"Public Sans",sans-serif; font-weight:600; font-size:1.15rem; line-height:1.1; }
+  .brand-sub { font-family:"JetBrains Mono",monospace; font-size:0.78rem; color:var(--soft); }
+  .byline { margin-top:0.45rem; font-size:0.85rem; color:var(--soft); }
+  dl.fnote { display:grid; grid-template-columns:7.5rem 1fr; gap:0.2rem 0.9rem; font-size:0.78rem;
+             margin:0.45rem 0 0; padding:0.6rem 0.75rem; background:var(--band); border-left:3px solid var(--rule); text-align:left; }
+  dl.fnote dt { color:var(--soft); font-size:0.66rem; letter-spacing:0.07em; text-transform:uppercase; padding-top:0.1rem; }
+  dl.fnote dd { margin:0; }
+  @media (max-width:34rem) { dl.fnote { grid-template-columns:1fr; } }
+  figure.tall { max-width:24rem; margin-left:auto; margin-right:auto; }
+  figure.mid { max-width:34rem; margin-left:auto; margin-right:auto; }
+</style>
+
+</head>
+<body>
+<div class="doc">
+
+  <div class="pad masthead">
+    <div class="line">
+      <span>Defect report QA-2609-11</span>
+      <span>Revision 4 <button id="lang" class="jump" type="button" aria-label="Switch language">Bahasa Indonesia</button></span>
+    </div>
+    <div class="brand">
+      <img src="ev/sana-icon.png" alt="Sana logo" width="56" height="56">
+      <div>
+        <div class="brand-name">Sana</div>
+        <div class="brand-sub">sana.run</div>
+      </div>
+    </div>
+    <h1>sana.run Spot and Perps Trading Defect Report</h1>
+    <p class="byline">Prepared for Sana (sana.run) by <strong>nayrbryanGaming</strong>. Independent QA report; not an official Sana publication.</p>
+    <p class="classline">CONFIDENTIAL. Restricted to the engagement. Unfixed defects enclosed.</p>
+  </div>
+
+  <section class="pad">
+    <h2><span class="num">1</span>Document control</h2>
+    <dl class="fields">
+      <dt>Report ID</dt><dd class="mono">QA-2609-11</dd>
+      <dt>Revision</dt><dd class="mono">4, 14 September 2026</dd>
+      <dt>Supersedes</dt><dd class="mono">Revision 3, 11 September 2026</dd>
+      <dt>Prepared for</dt><dd>Sana (sana.run)</dd>
+      <dt>Author</dt><dd>nayrbryanGaming</dd>
+      <dt>Classification</dt><dd>Confidential, internal to the engagement</dd>
+      <dt>Distribution</dt><dd>Engineering lead, QA lead, Product lead</dd>
+      <dt>Status</dt><dd>Issued for action. All defects open.</dd>
+      <dt>Change summary</dt><dd>Added 9 defects (A-05 to A-13) and 11 improvement proposals from 5 recordings of 13 September 2026 and screenshots of 14 September 2026. A-01 and A-02 updated with new evidence. Perps now in scope. All recordings muted.</dd>
+    </dl>
+  </section>
+
+  <section class="pad">
+    <h2><span class="num">2</span>Scope, environment and method</h2>
+    <dl class="fields">
+      <dt>Components</dt><dd>Spot order panel (Jupiter and Relay routes). Perps market list, order ticket, positions, collateral, trader registration, chart.</dd>
+      <dt>Sessions</dt><dd class="mono">8 Sep 2026 09:15 (Rec0). 13 Sep 2026 20:48 to 22:28 (Rec1 to Rec5, two screenshots). 14 Sep 2026 00:46 (two screenshots). Device clock.</dd>
+      <dt>Device</dt><dd>Android tablet, landscape. Microsoft Edge for Android. On-device screen recorder.</dd>
+      <dt>Wallet</dt><dd>Embedded session wallet <code>EZTf...E74P</code> as shown in the header. No per-trade signature prompt.</dd>
+      <dt>Funds</dt><dd>Real funds, small notionals. Spot USDC 13.8 to 1.8. Perps collateral USD 10. Positions of 0.01 SOL.</dd>
+      <dt>Method</dt><dd>Manual exploratory testing, screen recorded. Recordings sampled at 0.5 fps for triage, then at 4 fps and full resolution around each finding. Every claim below is tied to a timecode.</dd>
+      <dt>Transactions</dt><dd class="mono">Long 0.01 SOL 49hj...jsGR. Short 0.01 SOL 5h9V...jjLG. Short 0.01 SOL G78X...WzHQ. Truncated as displayed in the app toasts.</dd>
+      <dt>Not tested</dt><dd>See section 10.</dd>
+    </dl>
+  </section>
+
+  <section class="pad">
+    <h2><span class="num">3</span>Severity and classification</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Level</th><th>Definition</th></tr></thead>
+        <tbody>
+          <tr><td class="sev s0">P0</td><td>Fund loss, unauthorized access, incorrect deductions, failed withdrawals, duplicate real orders, or core trading flows completely unavailable.</td></tr>
+          <tr><td class="sev s1">P1</td><td>Incorrect orders, positions, balances, P&amp;L, prices, market status or settlement results; frequent crashes or freezes affecting core flows.</td></tr>
+          <tr><td class="sev s2">P2</td><td>Functional or performance issues that affect usage but have a reasonable workaround, such as refreshing or retrying.</td></tr>
+          <tr><td class="sev s3">P3</td><td>Copy, translation, layout, display or compatibility issues that do not affect core trading.</td></tr>
+          <tr><td class="mono">IMP</td><td>Improvement proposal. Not a defect. Eligible only if accepted onto the product roadmap. Filed separately from defects.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">Severity is proposed by QA. Final severity rests with the product team.</p>
+  </section>
+
+  <section class="pad">
+    <h2><span class="num">4</span>Finding register</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>ID</th><th>Sev</th><th>Area</th><th>Summary</th><th>Evidence</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">A-05</td><td class="sev s1">P1</td><td>Perps</td><td>Filled order reported as Order Failed; one confirmation produced a success and a failure</td><td class="mono">Rec5 01:33-01:45</td></tr>
+          <tr><td class="mono">A-01</td><td class="sev s1">P1</td><td>Spot</td><td>Buy action enabled after insufficient balance warning (3 of 3, Jupiter route only)</td><td class="mono">Rec0 00:00, Rec1 00:08</td></tr>
+          <tr><td class="mono">A-06</td><td class="sev s1">P1</td><td>Perps</td><td>Order confirmation and toast show 0.0120 SOL; position fills 0.01 SOL</td><td class="mono">Rec5 01:04-01:12</td></tr>
+          <tr><td class="mono">A-02</td><td class="sev s2">P2</td><td>Spot</td><td>Max selects full native balance; raw error Jupiter quote 400; no reason shown</td><td class="mono">Rec0 00:58, Rec1 01:04</td></tr>
+          <tr><td class="mono">A-03</td><td class="sev s2">P2</td><td>Spot</td><td>Quote service returns no data while price chart continues updating</td><td class="mono">Rec0 01:14-01:22</td></tr>
+          <tr><td class="mono">A-13</td><td class="sev s2">P2</td><td>Perps</td><td>Trader state 429 shows account as unverified with zero balance and positions; no automatic retry</td><td class="mono">Shot 14 Sep 00:46</td></tr>
+          <tr><td class="mono">A-07</td><td class="sev s2">P2</td><td>Perps</td><td>Market list fetch failure shown as empty category; header fields blank</td><td class="mono">Rec2 01:56-02:04</td></tr>
+          <tr><td class="mono">A-08</td><td class="sev s2">P2</td><td>Perps</td><td>Trader registration stalls on Registering until the page is reloaded</td><td class="mono">Rec3 00:36-01:02, Rec5 00:19</td></tr>
+          <tr><td class="mono">A-09</td><td class="sev s2">P2</td><td>Perps</td><td>First collateral deposit fails: Quote not ready to sign</td><td class="mono">Rec5 00:28</td></tr>
+          <tr><td class="mono">A-10</td><td class="sev s2">P2</td><td>Perps</td><td>Positions tab reads Positions (1) while listing No positions</td><td class="mono">Shot 22:14, 22:28</td></tr>
+          <tr><td class="mono">A-11</td><td class="sev s2">P2</td><td>Perps</td><td>Perps chart has no candle interval selector or label</td><td class="mono">Rec4 00:05, 00:17</td></tr>
+          <tr><td class="mono">A-04</td><td class="sev s3">P3</td><td>Spot</td><td>Balance display lags swap confirmation by approximately 8 s</td><td class="mono">Rec0 00:22-00:30</td></tr>
+          <tr><td class="mono">A-12</td><td class="sev s3">P3</td><td>Spot</td><td>Empty sell amount reports No SOL balance to sell while balance is 0.063742 SOL</td><td class="mono">Rec1 01:00</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="scroll" style="margin-top:1.1rem">
+      <table>
+        <thead><tr><th>ID</th><th>Type</th><th>Proposal</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">I-01</td><td class="mono">IMP</td><td>Take profit and stop loss on the order ticket, including staged partial take profit</td></tr>
+          <tr><td class="mono">I-02</td><td class="mono">IMP</td><td>Entry, liquidation and pending order lines on the chart</td></tr>
+          <tr><td class="mono">I-03</td><td class="mono">IMP</td><td>Confirmation dialog states the resulting position before an opposite-side order</td></tr>
+          <tr><td class="mono">I-04</td><td class="mono">IMP</td><td>Execution latency target for short-interval trading</td></tr>
+          <tr><td class="mono">I-05</td><td class="mono">IMP</td><td>Order book: cumulative depth bars and a unit on the size column</td></tr>
+          <tr><td class="mono">I-06</td><td class="mono">IMP</td><td>Collateral panel states what collateral backs and how much each position uses</td></tr>
+          <tr><td class="mono">I-07</td><td class="mono">IMP</td><td>ISO badge explains why a market is isolated-only</td></tr>
+          <tr><td class="mono">I-08</td><td class="mono">IMP</td><td>Register step explains the on-chain trader account and its SOL cost before the tap</td></tr>
+          <tr><td class="mono">I-09</td><td class="mono">IMP</td><td>Label market-wide trades and personal trades distinctly</td></tr>
+          <tr><td class="mono">I-10</td><td class="mono">IMP</td><td>Full-screen chart with indicators and drawing tools</td></tr>
+          <tr><td class="mono">I-11</td><td class="mono">IMP</td><td>Guide non-USDC holders to Swap and deposit from the perps ticket</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="pad" style="padding-bottom:0.6rem"><h2><span class="num">5</span>Defect records</h2></div>
+
+    <div class="rec">
+      <div class="hd">
+        <span class="id">A-05</span>
+        <span class="pill sev s1">P1 SEVERE</span>
+        <span class="kind">P0 CANDIDATE</span>
+        <h3 style="flex:1 1 100%">Filled order reported as Order Failed; one confirmation produced a success and a failure</h3>
+      </div>
+      <dl class="fields">
+        <dt>Component</dt><dd>Perps order ticket, confirmation dialog, order status toasts</dd>
+        <dt>Preconditions</dt><dd>Registered Phoenix trader. Cross margin, USD 10 collateral. Open SOL-PERP long of 0.01 SOL.</dd>
+        <dt>Steps</dt>
+        <dd>
+          <ol class="steps">
+            <li>Open SOL-PERP. Select Short, Market.</li>
+            <li>Enter size 1.2 USD (0.012 SOL), equal to the order that opened the long.</li>
+            <li>Tap Short SOL, then tap Place Short once.</li>
+            <li>Watch the toast area and the Positions tab for 10 s.</li>
+          </ol>
+        </dd>
+        <dt>Expected</dt><dd>One submission, one status. A success toast with the transaction, and a positions table that matches it.</dd>
+        <dt>Actual</dt><dd>Place Short tapped once at 01:34.8. Market Order Placed toast for Short 0.0120 SOL with transaction <code>5h9V...jjLG</code> at 01:35.7. At 01:36.0 an Order Failed toast for the same order stacks over it and remains alone on screen until 01:44.75, reading <code>Phoenix trader state 429</code>. The long position is closed: Positions (1) becomes Positions (0). The user, reading the failure, raised the size to 1.3 USD at 02:04 and opened a new, unintended short of 0.01 SOL (<code>G78X...WzHQ</code>).</dd>
+        <dt>Frequency</dt><dd>1 of 1 opposite-side order observed. The 429 suggests timing dependence.</dd>
+        <dt>Root cause</dt><dd>Hypothesis A: the confirm handler dispatches the order twice, for example a click handler plus form submit, or an effect that re-runs. The second request is rejected with HTTP 429. Hypothesis B: the post-fill trader state refresh is rate limited, and any error in the chain is mapped to Order Failed for the same order. Both are consistent with a success and a failure arriving 0.3 s apart. A-13 shows the same 429 on trader state reads the next day, which favors hypothesis B as at least part of the cause.</dd>
+        <dt>Risk</dt><dd>Under A, the only thing that stopped a duplicate real order was the rate limit; without it the outcome meets P0. Under B, the venue tells users a filled order failed, which drives retries and unintended positions, as happened here.</dd>
+        <dt>Recommendation</dt><dd>1. Generate a client order ID when the dialog opens; send it with the order and reject reuse server side. 2. Disable the confirm button from first tap until a terminal status. 3. Key toasts by client order ID so a later event cannot overwrite a fill. 4. Separate order errors from refresh errors; a failed refresh must read "Filled. Refreshing positions" and retry with backoff on 429. 5. Treat the transaction signature as the source of truth for status.</dd>
+        <dt>Verification needed</dt><dd>Trade History for 22:10 to 22:11 device time. Two submissions for Short 0.012 confirm hypothesis A and raise severity to P0.</dd>
+      </dl>
+      <figure class="wide clip">
+        <video controls muted preload="metadata" playsinline><source src="clips/a05.mp4" type="video/mp4">clips/a05.mp4</video>
+        <figcaption>Highlight clip for A-05, cut to the key moments and muted. Segments: Rec5 01:28-02:16. The complete, uncut recordings are in section 9.</figcaption>
+      </figure>
+      <figure class="wide tall">
+        <img src="ev/a05-1-long-placed.jpg" alt="Order ticket with Market Order Placed toast for a long">
+        <figcaption>Figure A-05.1. Rec5 01:12. Long 0.0120 SOL placed, transaction 49hj...jsGR.</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>The starting point of the A-05 sequence. A Market Order Placed notification confirms a long on SOL-PERP with Size 0.0120 ($1.20), price $100.34 and transaction 49hj...jsGR. After this order the account holds one open long position.</dd><dt>Severity</dt><dd>Context for A-05. This figure is not a defect by itself; it records the state before the defect.</dd><dt>Cause</dt><dd>No defect in this step, apart from the size rounding already described in A-06.</dd><dt>Possible impact</dt><dd>It establishes that a real, open, leveraged position existed before the short order. Without this baseline the later disappearance of the position could not be proven.</dd><dt>Solution</dt><dd>No action for this figure.</dd><dt>Evidence</dt><dd>Frame taken from recording Rec5 at 01:12 (file rec-5-perps-orders.mp4, complete and muted). Open the recording in the Evidence recordings section and play from a few seconds before this time to see the full sequence around the frame.</dd><dt>Steps to reproduce</dt><dd>1. Open SOL-PERP. Select Short, Market. 2. Enter size 1.2 USD (0.012 SOL), equal to the order that opened the long. 3. Tap Short SOL, then tap Place Short once. 4. Watch the toast area and the Positions tab for 10 s.</dd><dt>Feedback for the team</dt><dd>This is the most important finding in the report and should be checked first. Look up the order history for 22:10 to 22:11 to see whether one or two orders were sent. Whatever the answer, a filled order must never be reported as failed: tie each message to its own order, lock the confirm button until the result is final, and keep order errors separate from data refresh errors.</dd></dl>
+      </figure>
+      <figure class="wide tall">
+        <img src="ev/a05-2-confirm.jpg" alt="Confirmation dialog in submitting state">
+        <figcaption>Figure A-05.2. Rec5 01:34.8. Confirmation dialog, Place Short tapped once.</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>The Confirm Order dialog for Short 0.012 SOL at $100.35. It lists Estimated Liquidation Price $104.53, Expected Price $100.35, Order Value $1.20, Margin Required $0.05 and Network Fee $0.00. The Place Short button has been tapped once and now reads Submitting, so it can no longer be tapped again.</dd><dt>Severity</dt><dd>P1, candidate for P0 (A-05). The whole sequence is rated P1 for an incorrect order status and may be raised to P0 if a duplicate order is confirmed.</dd><dt>Cause</dt><dd>This frame proves that the user confirmed the order exactly once. If the exchange later received two submissions for this order, the second one was produced by the application, for example by a button handler and a form submit both firing, or by a repeated effect.</dd><dt>Possible impact</dt><dd>If the application does send the order twice, the only thing that prevented a duplicate real order in this case was the rate limit on the exchange. Without that limit the user would have opened two positions from one confirmation, which meets the P0 definition of duplicate real orders.</dd><dt>Solution</dt><dd>Create a unique client order ID when the dialog opens, send it with the order, and reject any second request with the same ID on the server. Keep the confirm button locked from the first tap until the order reaches a final status.</dd><dt>Evidence</dt><dd>Frame taken from recording Rec5 at 01:34.8 (file rec-5-perps-orders.mp4, complete and muted). Open the recording in the Evidence recordings section and play from a few seconds before this time to see the full sequence around the frame.</dd><dt>Steps to reproduce</dt><dd>1. Open SOL-PERP. Select Short, Market. 2. Enter size 1.2 USD (0.012 SOL), equal to the order that opened the long. 3. Tap Short SOL, then tap Place Short once. 4. Watch the toast area and the Positions tab for 10 s.</dd><dt>Feedback for the team</dt><dd>This is the most important finding in the report and should be checked first. Look up the order history for 22:10 to 22:11 to see whether one or two orders were sent. Whatever the answer, a filled order must never be reported as failed: tie each message to its own order, lock the confirm button until the result is final, and keep order errors separate from data refresh errors.</dd></dl>
+      </figure>
+      <figure class="wide tall">
+        <img src="ev/a05-3-stacked.jpg" alt="Success toast with failure toast stacked over it">
+        <figcaption>Figure A-05.3. Rec5 01:36. Market Order Placed for the short, with Order Failed stacked on top.</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>Less than a second after confirmation. A green Market Order Placed notification for the short, Size 0.0120 ($1.20), price $100.35, transaction 5h9V...jjLG, is visible. A red Order Failed notification for the same order is already sliding in on top of it, so both results are on screen at once.</dd><dt>Severity</dt><dd>P1, candidate for P0 (A-05). One order produced two opposite results within about 0.3 seconds.</dd><dt>Cause</dt><dd>Two explanations fit this frame. Either the order was sent twice and the second request was rejected with HTTP 429, or the order succeeded and the account state refresh that follows it was rate limited, and that refresh error was reported as a failure of the order.</dd><dt>Possible impact</dt><dd>The user is told that an order which actually filled has failed. That misinformation directly caused the next mistake in the recording, a new unintended short opened to retry the order.</dd><dt>Solution</dt><dd>Tie each notification to its client order ID so a later event cannot replace an earlier result, and use the on-chain transaction signature as the final source of truth for whether an order succeeded.</dd><dt>Evidence</dt><dd>Frame taken from recording Rec5 at 01:36 (file rec-5-perps-orders.mp4, complete and muted). Open the recording in the Evidence recordings section and play from a few seconds before this time to see the full sequence around the frame.</dd><dt>Steps to reproduce</dt><dd>1. Open SOL-PERP. Select Short, Market. 2. Enter size 1.2 USD (0.012 SOL), equal to the order that opened the long. 3. Tap Short SOL, then tap Place Short once. 4. Watch the toast area and the Positions tab for 10 s.</dd><dt>Feedback for the team</dt><dd>This is the most important finding in the report and should be checked first. Look up the order history for 22:10 to 22:11 to see whether one or two orders were sent. Whatever the answer, a filled order must never be reported as failed: tie each message to its own order, lock the confirm button until the result is final, and keep order errors separate from data refresh errors.</dd></dl>
+      </figure>
+      <figure class="wide tall">
+        <img src="ev/a05-4-429.jpg" alt="Order Failed toast reading Phoenix trader state 429">
+        <figcaption>Figure A-05.4. Rec5 01:44. Only the failure remains: Phoenix trader state 429.</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>Eight seconds later the green notification has disappeared and only the red Order Failed notification remains. It still lists the short, Size 0.0120 ($1.20), price $100.35, and its reason line reads Phoenix trader state 429.</dd><dt>Severity</dt><dd>P1, candidate for P0 (A-05). This is the message the user was left with.</dd><dt>Cause</dt><dd>HTTP 429 means Too Many Requests. The request that failed was the Phoenix trader state lookup, which reads the account after an order. The interface reports a failed account lookup as if the order itself had failed.</dd><dt>Possible impact</dt><dd>Relying on this message, the tester raised the size to 1.3 USD at 02:04 and placed another short, which opened a new position they did not intend to hold. A normal user would do the same.</dd><dt>Solution</dt><dd>Separate order errors from data refresh errors. When the order is filled but the refresh fails, show Filled, refreshing positions, and retry the refresh automatically with increasing delays and respect for the Retry-After header.</dd><dt>Evidence</dt><dd>Frame taken from recording Rec5 at 01:44 (file rec-5-perps-orders.mp4, complete and muted). Open the recording in the Evidence recordings section and play from a few seconds before this time to see the full sequence around the frame.</dd><dt>Steps to reproduce</dt><dd>1. Open SOL-PERP. Select Short, Market. 2. Enter size 1.2 USD (0.012 SOL), equal to the order that opened the long. 3. Tap Short SOL, then tap Place Short once. 4. Watch the toast area and the Positions tab for 10 s.</dd><dt>Feedback for the team</dt><dd>This is the most important finding in the report and should be checked first. Look up the order history for 22:10 to 22:11 to see whether one or two orders were sent. Whatever the answer, a filled order must never be reported as failed: tie each message to its own order, lock the confirm button until the result is final, and keep order errors separate from data refresh errors.</dd></dl>
+      </figure>
+      <figure class="wide">
+        <img src="ev/a05-5-pos-before.jpg" alt="Positions table with one SOL-PERP long">
+        <figcaption>Figure A-05.5. Rec5 01:12. Positions (1): SOL-PERP Long 0.01 SOL.</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>The Positions table before the short order. It reads Positions (1) with one row: SOL-PERP Long, Size 0.01 SOL, Position Value $1.00, Entry $100.36, Mark $100.34, Liq $95.36.</dd><dt>Severity</dt><dd>Context for A-05. This figure records the account state before the defect.</dd><dt>Cause</dt><dd>No defect in this step.</dd><dt>Possible impact</dt><dd>It shows there was a real open position that could be affected by the next order. The liquidation price of $95.36 also shows the position was leveraged.</dd><dt>Solution</dt><dd>No action for this figure.</dd><dt>Evidence</dt><dd>Frame taken from recording Rec5 at 01:12 (file rec-5-perps-orders.mp4, complete and muted). Open the recording in the Evidence recordings section and play from a few seconds before this time to see the full sequence around the frame.</dd><dt>Steps to reproduce</dt><dd>1. Open SOL-PERP. Select Short, Market. 2. Enter size 1.2 USD (0.012 SOL), equal to the order that opened the long. 3. Tap Short SOL, then tap Place Short once. 4. Watch the toast area and the Positions tab for 10 s.</dd><dt>Feedback for the team</dt><dd>This is the most important finding in the report and should be checked first. Look up the order history for 22:10 to 22:11 to see whether one or two orders were sent. Whatever the answer, a filled order must never be reported as failed: tie each message to its own order, lock the confirm button until the result is final, and keep order errors separate from data refresh errors.</dd></dl>
+      </figure>
+      <figure class="wide">
+        <img src="ev/a05-6-pos-after.jpg" alt="Positions table reading No positions">
+        <figcaption>Figure A-05.6. Rec5 01:36. Positions (0): the long was closed.</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>The Positions table right after the Order Failed notification. The tab now reads Positions (0) and the table shows No positions. The long position from figure A-05.5 is gone.</dd><dt>Severity</dt><dd>P1 (A-05). This figure proves that the order reported as failed actually changed the account.</dd><dt>Cause</dt><dd>The short did fill. On this exchange positions are netted per market, so a short of the same size as the long reduced the position to zero. Because of the rounding in A-06, both orders were exactly 0.01 SOL, so the netting was complete.</dd><dt>Possible impact</dt><dd>The only message on screen, Order Failed, contradicts what really happened to the account. Users cannot trust either the notification or their own understanding of their positions, and may lose money by acting on the wrong one.</dd><dt>Solution</dt><dd>Show the resulting position in every order result message, for example Short filled, position closed, and include the transaction link so the user can verify it independently.</dd><dt>Evidence</dt><dd>Frame taken from recording Rec5 at 01:36 (file rec-5-perps-orders.mp4, complete and muted). Open the recording in the Evidence recordings section and play from a few seconds before this time to see the full sequence around the frame.</dd><dt>Steps to reproduce</dt><dd>1. Open SOL-PERP. Select Short, Market. 2. Enter size 1.2 USD (0.012 SOL), equal to the order that opened the long. 3. Tap Short SOL, then tap Place Short once. 4. Watch the toast area and the Positions tab for 10 s.</dd><dt>Feedback for the team</dt><dd>This is the most important finding in the report and should be checked first. Look up the order history for 22:10 to 22:11 to see whether one or two orders were sent. Whatever the answer, a filled order must never be reported as failed: tie each message to its own order, lock the confirm button until the result is final, and keep order errors separate from data refresh errors.</dd></dl>
+      </figure>
+      <button class="jump" data-v="rec5" data-t="90">Play Rec5 at 01:30</button>
+      <button class="jump" data-v="rec5" data-t="122">Play Rec5 at 02:02</button>
+    </div>
+
+    <div class="rec">
+      <div class="hd">
+        <span class="id">A-01</span>
+        <span class="pill sev s1">P1 SEVERE</span>
+        <span class="kind">UPDATED REV 4</span>
+        <h3 style="flex:1 1 100%">Buy action remains enabled after insufficient balance warning</h3>
+      </div>
+      <dl class="fields">
+        <dt>Component</dt><dd>Spot order panel, Buy tab, primary action control, Solana (Jupiter) route</dd>
+        <dt>Preconditions</dt><dd>Wallet connected. USDC balance below the entered notional.</dd>
+        <dt>Steps</dt>
+        <dd>
+          <ol class="steps">
+            <li>Open a Solana spot pair, for example Tulip.</li>
+            <li>Select the Buy tab.</li>
+            <li>Enter an amount exceeding the USDC balance, or tap the 50 USD preset.</li>
+            <li>Observe the warning line and the primary action control.</li>
+            <li>Repeat on an Arbitrum pair routed by Relay.</li>
+          </ol>
+        </dd>
+        <dt>Expected</dt><dd>Primary action disabled while the shortfall warning is displayed, on every route.</dd>
+        <dt>Actual</dt><dd>Jupiter route: warning <code>Not enough USDC - you have 13.8 USDC</code>; Buy Tulip renders enabled. Relay route (ETH on Arbitrum): warning <code>Not enough USD - largest origin is 13.8 on Solana USDC</code>; Buy ETH is correctly disabled.</dd>
+        <dt>Frequency</dt><dd>3 of 3 on the Jupiter route: USDC 0 (Rec0 00:00), USDC 13.8 (Rec0 01:30), USDC 13.8 on Tulip (Rec1 00:00 to 00:12). Also seen on USDT (Rec4 00:04). 0 of 1 on the Relay route.</dd>
+        <dt>Root cause</dt><dd>Hypothesis, narrowed by rev 4: the Relay path binds its shortfall check to the disabled state; the Jupiter path binds it to the warning text only. The fix pattern already exists in the codebase.</dd>
+        <dt>Risk</dt><dd>Submission of an unfundable order. If a partial fill or fee-only transaction settles, the outcome meets the P0 incorrect deduction definition.</dd>
+        <dt>Recommendation</dt><dd>Move the shortfall predicate into a route-independent <code>canSubmit</code> used by both paths. Add a regression assertion that the control is disabled whenever the warning node is mounted, parameterised by route.</dd>
+      </dl>
+      <figure class="wide clip">
+        <video controls muted preload="metadata" playsinline><source src="clips/a01.mp4" type="video/mp4">clips/a01.mp4</video>
+        <figcaption>Highlight clip for A-01, cut to the key moments and muted. Segments: Rec0 00:00-00:06, Rec1 00:00-00:14, Rec1 00:52-01:00. The complete, uncut recordings are in section 9.</figcaption>
+      </figure>
+        <figure class="wide">
+          <img src="f_001.jpg" alt="Order panel, zero USDC balance, 50 USDC entered, warning displayed, Buy control enabled">
+          <figcaption>Figure A-01.1. Rec0 00:00. USDC 0, entered 50. Warning present, control enabled.</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>The Buy tab of the spot order panel with a USDC balance of 0 and an amount of 50 USDC entered. Directly under the amount the panel prints a red warning, Not enough USDC. Despite that warning, the Buy button below keeps its full bright colour, the same colour it has when an order is fully funded, and it responds to taps.</dd><dt>Severity</dt><dd>P1 (A-01). The defect concerns an order control that allows an incorrect order to be submitted, which falls under P1: incorrect orders or balances. It is not P0 because no deduction was observed in this session.</dd><dt>Cause</dt><dd>The panel clearly computes the shortfall, because it shows the warning text. That result is only used to render the warning. The disabled state of the Buy button is derived from a different set of conditions, such as a non-empty amount and a loaded quote, and the balance comparison is missing from that set.</dd><dt>Possible impact</dt><dd>A user can press Buy for an order the wallet cannot fund. In the best case the transaction fails on chain and the user loses time and trust. In the worse case a partial fill or a fee-only transaction settles, which would be an incorrect deduction and meets the P0 definition. A warning next to a live button also reads as advisory rather than blocking, so users learn to ignore it.</dd><dt>Solution</dt><dd>Compute one canSubmit value from amount, balance, quote and connection state, and bind both the warning and the disabled attribute of the button to that single value. Add a regression test that fails whenever the warning node is visible while the button is enabled.</dd><dt>Evidence</dt><dd>Frame taken from recording Rec0 at 00:00 (file spot-session-full.mp4, complete and muted). Open the recording in the Evidence recordings section and play from a few seconds before this time to see the full sequence around the frame.</dd><dt>Steps to reproduce</dt><dd>1. Open a Solana spot pair, for example Tulip. 2. Select the Buy tab. 3. Enter an amount exceeding the USDC balance, or tap the 50 USD preset. 4. Observe the warning line and the primary action control. 5. Repeat on an Arbitrum pair routed by Relay.</dd><dt>Feedback for the team</dt><dd>Treat every warning that says an order cannot be funded as a hard stop, not as advice. The Relay route already does this well, so the quickest and safest path is to reuse that code on the Jupiter route rather than write a new check. After the fix, run the same test on at least three tokens and on both a zero and a partial balance, because the defect appeared on all of them.</dd></dl>
+        </figure>
+      <figure class="wide tall">
+        <img src="ev/a01-2-jupiter.jpg" alt="Buy panel for Tulip with warning and enabled button">
+        <figcaption>Figure A-01.2. Rec1 00:08. Tulip on the Jupiter route: warning shown, Buy Tulip enabled.</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>The Buy tab for the Tulip token, routed through Jupiter. The balance is 13.8 USDC and the amount is 50 USDC. The panel shows Not enough USDC - you have 13.8 USDC, and at the same time the Buy Tulip button is enabled and tappable.</dd><dt>Severity</dt><dd>P1 (A-01). This is the second independent reproduction of the same defect, on a different token and with a non-zero balance.</dd><dt>Cause</dt><dd>The same missing link between the shortfall check and the button state. Because it appears with both a zero balance and a positive balance, and on two different tokens, the cause is in the shared Jupiter order path and not in a specific token or edge value.</dd><dt>Possible impact</dt><dd>It shows the defect is systematic. Any user on any Jupiter-routed pair who types more than their balance can submit the order. The number of affected users is therefore not limited to empty wallets.</dd><dt>Solution</dt><dd>Fix the check once in the shared Jupiter order component so every pair inherits it, and include at least one zero-balance case and one partial-balance case in the regression test.</dd><dt>Evidence</dt><dd>Frame taken from recording Rec1 at 00:08 (file rec-1-spot-max.mp4, complete and muted). Open the recording in the Evidence recordings section and play from a few seconds before this time to see the full sequence around the frame.</dd><dt>Steps to reproduce</dt><dd>1. Open a Solana spot pair, for example Tulip. 2. Select the Buy tab. 3. Enter an amount exceeding the USDC balance, or tap the 50 USD preset. 4. Observe the warning line and the primary action control. 5. Repeat on an Arbitrum pair routed by Relay.</dd><dt>Feedback for the team</dt><dd>Treat every warning that says an order cannot be funded as a hard stop, not as advice. The Relay route already does this well, so the quickest and safest path is to reuse that code on the Jupiter route rather than write a new check. After the fix, run the same test on at least three tokens and on both a zero and a partial balance, because the defect appeared on all of them.</dd></dl>
+      </figure>
+      <figure class="wide tall">
+        <img src="ev/a01-3-relay.jpg" alt="Buy panel for ETH with warning and disabled button">
+        <figcaption>Figure A-01.3. Rec1 00:56. ETH on the Relay route: warning shown, Buy ETH disabled.</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>The Buy tab for ETH on Arbitrum, routed through Relay, with the same 50 USD amount and the same 13.8 USDC balance. The panel explains the shortfall in detail, Not enough USD - largest origin is 13.8 on Solana USDC, and the Buy ETH button is dimmed and cannot be pressed.</dd><dt>Severity</dt><dd>Reference behaviour for A-01. This figure shows correct behaviour and is included for comparison, not as a defect.</dd><dt>Cause</dt><dd>The Relay path already connects its shortfall check to the disabled state of the button. The two routes were evidently implemented separately and only one of them received the check.</dd><dt>Possible impact</dt><dd>It proves that the expected behaviour is already designed and built inside the product. This lowers the cost and risk of the fix for A-01, because the team can copy an existing pattern instead of inventing a new one.</dd><dt>Solution</dt><dd>Move the Relay shortfall logic into a route-independent helper and use it on both Jupiter and Relay, so the two routes cannot drift apart again.</dd><dt>Evidence</dt><dd>Frame taken from recording Rec1 at 00:56 (file rec-1-spot-max.mp4, complete and muted). Open the recording in the Evidence recordings section and play from a few seconds before this time to see the full sequence around the frame.</dd><dt>Steps to reproduce</dt><dd>1. Open a Solana spot pair, for example Tulip. 2. Select the Buy tab. 3. Enter an amount exceeding the USDC balance, or tap the 50 USD preset. 4. Observe the warning line and the primary action control. 5. Repeat on an Arbitrum pair routed by Relay.</dd><dt>Feedback for the team</dt><dd>Treat every warning that says an order cannot be funded as a hard stop, not as advice. The Relay route already does this well, so the quickest and safest path is to reuse that code on the Jupiter route rather than write a new check. After the fix, run the same test on at least three tokens and on both a zero and a partial balance, because the defect appeared on all of them.</dd></dl>
+      </figure>
+      <button class="jump" data-v="rec1" data-t="0">Play Rec1 at 00:00</button>
+      <button class="jump" data-v="rec1" data-t="50">Play Rec1 at 00:50</button>
+    </div>
+
+    <div class="rec">
+      <div class="hd">
+        <span class="id">A-06</span>
+        <span class="pill sev s1">P1 SEVERE</span>
+        <h3 style="flex:1 1 100%">Order confirmation and toast show 0.0120 SOL; position fills 0.01 SOL</h3>
+      </div>
+      <dl class="fields">
+        <dt>Component</dt><dd>Perps order ticket size conversion, confirmation dialog, fill toast</dd>
+        <dt>Preconditions</dt><dd>Registered trader with collateral. SOL-PERP.</dd>
+        <dt>Steps</dt>
+        <dd>
+          <ol class="steps">
+            <li>Enter size 1.2 USD on SOL-PERP Long.</li>
+            <li>Read the confirmation dialog, then tap Place Long.</li>
+            <li>Read the Market Order Placed toast.</li>
+            <li>Read Size and Position Value in the Positions tab.</li>
+          </ol>
+        </dd>
+        <dt>Expected</dt><dd>The dialog shows the size that will fill after lot rounding, and the toast matches the fill.</dd>
+        <dt>Actual</dt><dd>Dialog: <code>Long 0.012 SOL at $100.34</code>, order value USD 1.20. Toast: <code>Size 0.0120 ($1.20)</code>. Position: <code>0.01 SOL</code>, value USD 1.00. The later 1.3 USD short (0.013 SOL) also filled as 0.01 SOL.</dd>
+        <dt>Frequency</dt><dd>3 of 3 orders in Rec5.</dd>
+        <dt>Root cause</dt><dd>Hypothesis: the ticket converts USD to base units at full precision and the market lot size (0.01 SOL) is applied on chain. The UI never reads back the lot size.</dd>
+        <dt>Risk</dt><dd>Order size is misreported by up to 20 percent at these notionals, and the rounding is invisible. It is also why a 0.012 short closed the long exactly in A-05: both were really 0.01.</dd>
+        <dt>Recommendation</dt><dd>Round the entered size to the market lot size before quoting, show <code>Fills as 0.01 SOL (lot 0.01)</code> under the input, and build the toast from the fill event, not the request.</dd>
+      </dl>
+      <figure class="wide clip">
+        <video controls muted preload="metadata" playsinline><source src="clips/a06.mp4" type="video/mp4">clips/a06.mp4</video>
+        <figcaption>Highlight clip for A-06, cut to the key moments and muted. Segments: Rec5 01:00-01:16. The complete, uncut recordings are in section 9.</figcaption>
+      </figure>
+      <figure class="wide mid">
+        <img src="ev/a06-1-toast.jpg" alt="Market Order Placed toast with size 0.0120">
+        <figcaption>Figure A-06.1. Rec5 01:12. Toast reports Size 0.0120 ($1.20).</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>The Market Order Placed notification shown right after a long order on SOL-PERP. It reports Position SOL Long, Size 0.0120 ($1.20), Price $100.34, Order Type Market and transaction 49hj...jsGR. To the user this reads as confirmation that a position of 0.012 SOL worth 1.20 USD was opened.</dd><dt>Severity</dt><dd>P1 (A-06). The notification reports an incorrect order size, which falls under P1: incorrect orders or positions.</dd><dt>Cause</dt><dd>The notification text is built from the size the user requested in the ticket, not from the size that was actually filled. The request is 0.012 SOL, but the market only accepts whole lots of 0.01 SOL, so the real fill is smaller than the number shown.</dd><dt>Possible impact</dt><dd>The user believes the position is 20 percent larger than it really is. Risk, margin and exit decisions are then based on a wrong number. On larger orders the absolute difference grows with the notional.</dd><dt>Solution</dt><dd>Build the notification from the fill event returned by the exchange, and show the rounded size before the user confirms, for example Fills as 0.01 SOL (lot 0.01) under the size field.</dd><dt>Evidence</dt><dd>Frame taken from recording Rec5 at 01:12 (file rec-5-perps-orders.mp4, complete and muted). Open the recording in the Evidence recordings section and play from a few seconds before this time to see the full sequence around the frame.</dd><dt>Steps to reproduce</dt><dd>1. Enter size 1.2 USD on SOL-PERP Long. 2. Read the confirmation dialog, then tap Place Long. 3. Read the Market Order Placed toast. 4. Read Size and Position Value in the Positions tab.</dd><dt>Feedback for the team</dt><dd>Users should always see the size that will really be filled. Read the lot size of each market, round the entered size before confirmation, and build every notification from the fill rather than from the request. This one change also makes the result of opposite orders predictable.</dd></dl>
+      </figure>
+      <figure class="wide">
+        <img src="ev/a06-2-filled.jpg" alt="Positions row showing 0.01 SOL and $1.00">
+        <figcaption>Figure A-06.2. Rec5 01:12. Position filled at 0.01 SOL, value $1.00.</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>The Positions table for the same order a moment later. It lists SOL-PERP Long, Size 0.01 SOL, Position Value $1.00, Entry $100.36, Mark $100.34 and Liq $95.36. The notification in the previous figure said 0.0120 and $1.20.</dd><dt>Severity</dt><dd>P1 (A-06). Together with figure A-06.1 this is the direct evidence that the displayed size and the real size disagree.</dd><dt>Cause</dt><dd>The market lot size is 0.01 SOL. The on-chain order rounds 0.012 down to 0.01, and nothing in the interface reads that rounding back before or after the order.</dd><dt>Possible impact</dt><dd>The confirmation dialog, the notification and the positions table disagree by 20 percent. This rounding is also the reason why, in A-05, a short of 0.012 SOL closed the long of 0.012 SOL exactly: both were really 0.01 SOL.</dd><dt>Solution</dt><dd>Round the entered size to the lot size before requesting a quote, display the rounded size in the confirmation dialog, and use the same rounded value in the notification and in the order history.</dd><dt>Evidence</dt><dd>Frame taken from recording Rec5 at 01:12 (file rec-5-perps-orders.mp4, complete and muted). Open the recording in the Evidence recordings section and play from a few seconds before this time to see the full sequence around the frame.</dd><dt>Steps to reproduce</dt><dd>1. Enter size 1.2 USD on SOL-PERP Long. 2. Read the confirmation dialog, then tap Place Long. 3. Read the Market Order Placed toast. 4. Read Size and Position Value in the Positions tab.</dd><dt>Feedback for the team</dt><dd>Users should always see the size that will really be filled. Read the lot size of each market, round the entered size before confirmation, and build every notification from the fill rather than from the request. This one change also makes the result of opposite orders predictable.</dd></dl>
+      </figure>
+      <button class="jump" data-v="rec5" data-t="60">Play Rec5 at 01:00</button>
+    </div>
+
+    <div class="rec">
+      <div class="hd">
+        <span class="id">A-02</span>
+        <span class="pill sev s2">P2 MEDIUM</span>
+        <span class="kind">UPDATED REV 4</span>
+        <h3 style="flex:1 1 100%">Max selects full native balance; raw error Jupiter quote 400; no reason shown</h3>
+      </div>
+      <dl class="fields">
+        <dt>Component</dt><dd>Spot order panel, Sell tab, percentage presets, quote error handling</dd>
+        <dt>Preconditions</dt><dd>Wallet holds native SOL only. No wrapped SOL.</dd>
+        <dt>Steps</dt>
+        <dd>
+          <ol class="steps">
+            <li>Open the SOL spot pair and select the Sell tab.</li>
+            <li>Tap Max.</li>
+            <li>Wait for the quote to resolve and attempt to submit.</li>
+            <li>Tap 75 percent and wait again.</li>
+          </ol>
+        </dd>
+        <dt>Expected</dt><dd>Max reserves rent and network fees. Any quote failure is explained in plain language with the action to take.</dd>
+        <dt>Actual</dt><dd>Rec0: Max fills <code>0.137792</code> SOL; quote resolves; Sell disabled for 14 s with no message; 75 percent works. Rec1: Max fills <code>0.063742</code> SOL; quote fields stay blank and the panel prints the raw string <code>Jupiter quote 400</code>. The condition persists into Rec2 00:00 to 00:28, including at 25 percent.</dd>
+        <dt>Frequency</dt><dd>2 of 2 sessions. Symptom differs by balance: disabled button at 0.137 SOL, HTTP 400 at 0.064 SOL.</dd>
+        <dt>Root cause</dt><dd>Hypothesis: Max uses the raw lamport balance with no reserve. With less headroom the quote request itself is rejected by the aggregator with HTTP 400, and the status code is shown verbatim. The persistence at 25 percent suggests the failed quote is cached rather than re-requested when the amount changes.</dd>
+        <dt>Risk</dt><dd>The primary sell control dead-ends for any user who sells everything, which is the common exit action. Raw HTTP codes read as a broken venue.</dd>
+        <dt>Recommendation</dt><dd>1. Max fills <code>balance - rentExempt - feeBuffer</code>, about 0.003 SOL. 2. Map aggregator errors to messages, for example <em>Keep about 0.003 SOL for network fees</em>. 3. Invalidate the quote cache on every amount change. 4. Show the reason whenever the control is disabled.</dd>
+      </dl>
+      <figure class="wide clip">
+        <video controls muted preload="metadata" playsinline><source src="clips/a02.mp4" type="video/mp4">clips/a02.mp4</video>
+        <figcaption>Highlight clip for A-02, cut to the key moments and muted. Segments: Rec0 00:54-01:20, Rec1 00:58-01:18. The complete, uncut recordings are in section 9.</figcaption>
+      </figure>
+        <figure class="wide">
+          <img src="f_030.jpg" alt="Sell panel, Max selected, full balance filled, quote valid, Sell control dimmed">
+          <figcaption>Figure A-02.1. Rec0 00:58. Max fills 0.137792 SOL. Quote valid, control disabled.</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>The Sell tab of the SOL spot pair after tapping Max. The amount field is filled with 0.137792 SOL, which is the entire native SOL balance. The quote has fully loaded, including the amount to receive, price impact and router. The Sell button is nevertheless dimmed, and no text, tooltip or notification explains why.</dd><dt>Severity</dt><dd>P2 (A-02). The main action cannot be completed, but a workaround exists: selecting 75 percent enables the button.</dd><dt>Cause</dt><dd>Max uses the full native balance and keeps nothing back for account rent and the network fee. A later guard notices that the transaction cannot pay its own fee and silently disables the button, while the quote service is unaware of that reserve.</dd><dt>Possible impact</dt><dd>Selling the whole balance is one of the most common exit actions. Users who do not guess the 75 percent workaround are stuck and may conclude that the exchange is broken or that their funds are locked. A full quote next to a dead button also undermines trust in the displayed numbers.</dd><dt>Solution</dt><dd>Make Max fill the balance minus a small reserve of about 0.003 SOL for rent and fees, and whenever the button is disabled show the reason in plain words, for example Keep about 0.003 SOL for network fees.</dd><dt>Evidence</dt><dd>Frame taken from recording Rec0 at 00:58 (file spot-session-full.mp4, complete and muted). Open the recording in the Evidence recordings section and play from a few seconds before this time to see the full sequence around the frame.</dd><dt>Steps to reproduce</dt><dd>1. Open the SOL spot pair and select the Sell tab. 2. Tap Max. 3. Wait for the quote to resolve and attempt to submit. 4. Tap 75 percent and wait again.</dd><dt>Feedback for the team</dt><dd>Selling everything is a normal action and should never end at a dead button. Reserve the network fee inside Max, replace raw codes such as Jupiter quote 400 with a sentence that tells the user what to do, and make sure a failed quote is requested again as soon as the amount changes. A disabled button without a reason should be treated as a defect in code review.</dd></dl>
+        </figure>
+      <figure class="wide tall">
+        <img src="ev/a02-2-quote400.jpg" alt="Sell panel with Max selected and Jupiter quote 400 error">
+        <figcaption>Figure A-02.2. Rec1 01:04. Max fills 0.063742 SOL; panel prints Jupiter quote 400.</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>The Sell tab after tapping Max on a smaller balance of 0.063742 SOL. The quote fields for receive amount, impact and router stay empty, and the panel prints the raw text Jupiter quote 400 in red under the quote box. The Sell SOL button is dimmed.</dd><dt>Severity</dt><dd>P2 (A-02). Same defect as figure A-02.1, showing a second symptom that appears at a lower balance.</dd><dt>Cause</dt><dd>With even less room left for fees, the quote request itself is rejected by the Jupiter aggregator with HTTP status 400. The interface displays that status code as it is instead of translating it into a message the user can act on.</dd><dt>Possible impact</dt><dd>A raw HTTP code tells an ordinary trader nothing about what to do. It looks like a system failure, which damages confidence in the platform at the moment the user is trying to exit a position.</dd><dt>Solution</dt><dd>Map known aggregator errors to plain messages with a clear action. For this case the message should say that some SOL must be kept for network fees and offer a button that fills the maximum sellable amount.</dd><dt>Evidence</dt><dd>Frame taken from recording Rec1 at 01:04 (file rec-1-spot-max.mp4, complete and muted). Open the recording in the Evidence recordings section and play from a few seconds before this time to see the full sequence around the frame.</dd><dt>Steps to reproduce</dt><dd>1. Open the SOL spot pair and select the Sell tab. 2. Tap Max. 3. Wait for the quote to resolve and attempt to submit. 4. Tap 75 percent and wait again.</dd><dt>Feedback for the team</dt><dd>Selling everything is a normal action and should never end at a dead button. Reserve the network fee inside Max, replace raw codes such as Jupiter quote 400 with a sentence that tells the user what to do, and make sure a failed quote is requested again as soon as the amount changes. A disabled button without a reason should be treated as a defect in code review.</dd></dl>
+      </figure>
+      <figure class="wide tall">
+        <img src="ev/a02-3-75pct.jpg" alt="Sell panel at 75 percent with no quote">
+        <figcaption>Figure A-02.3. Rec1 01:14. At 75 percent the quote is still blank.</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>The same Sell tab after switching from Max to 75 percent, which fills 0.047807 SOL and shows Selling 0.047807 SOL (~$4.76). The receive amount, impact and router fields are still empty, so the lower amount does not produce a new quote.</dd><dt>Severity</dt><dd>P2 (A-02). This figure shows that the failure persists after the user changes the amount.</dd><dt>Cause</dt><dd>The failed quote appears to be kept in a cache and is not requested again when the amount changes. In the earlier session 75 percent worked, which shows the smaller amount itself is valid; the problem is that no fresh request is made.</dd><dt>Possible impact</dt><dd>Even the obvious workaround does not recover the panel. The same stuck state continued into the next recording, including at 25 percent, so the user could not sell without leaving or reloading the page.</dd><dt>Solution</dt><dd>Invalidate the cached quote on every change of amount, retry a failed quote after a short delay, and clear the error message as soon as a new valid quote arrives.</dd><dt>Evidence</dt><dd>Frame taken from recording Rec1 at 01:14 (file rec-1-spot-max.mp4, complete and muted). Open the recording in the Evidence recordings section and play from a few seconds before this time to see the full sequence around the frame.</dd><dt>Steps to reproduce</dt><dd>1. Open the SOL spot pair and select the Sell tab. 2. Tap Max. 3. Wait for the quote to resolve and attempt to submit. 4. Tap 75 percent and wait again.</dd><dt>Feedback for the team</dt><dd>Selling everything is a normal action and should never end at a dead button. Reserve the network fee inside Max, replace raw codes such as Jupiter quote 400 with a sentence that tells the user what to do, and make sure a failed quote is requested again as soon as the amount changes. A disabled button without a reason should be treated as a defect in code review.</dd></dl>
+      </figure>
+      <button class="jump" data-v="rec1" data-t="58">Play Rec1 at 00:58</button>
+      <button class="jump" data-v="rec2" data-t="0">Play Rec2 at 00:00</button>
+    </div>
+
+    <div class="rec">
+      <div class="hd">
+        <span class="id">A-03</span>
+        <span class="pill sev s2">P2 MEDIUM</span>
+        <h3 style="flex:1 1 100%">Quote service returns no data while price chart continues updating</h3>
+      </div>
+      <dl class="fields">
+        <dt>Component</dt><dd>Trades feed, quote service, order panel</dd>
+        <dt>Preconditions</dt><dd>Continuous interaction on a SOL spot pair for 60 to 90 s.</dd>
+        <dt>Steps</dt>
+        <dd>
+          <ol class="steps">
+            <li>Remain on the pair through sustained interaction.</li>
+            <li>Observe the Trades panel header.</li>
+            <li>Change the order amount and observe the quote fields.</li>
+          </ol>
+        </dd>
+        <dt>Expected</dt><dd>Degraded service is communicated consistently across every dependent panel, with a retry path.</dd>
+        <dt>Actual</dt><dd>Trades panel shows a <code>DEGRADED</code> badge over <em>No data yet.</em> Order panel renders a dash for receive amount, price impact and router, and refuses submission. Candlestick chart and ticker strip continue updating normally.</dd>
+        <dt>Frequency</dt><dd>Once in Rec0, after 60 to 90 s of continuous interaction. Not re-observed on 13 Sep.</dd>
+        <dt>Root cause</dt><dd>Hypothesis: trades stream and quote endpoint share a backend or rate limit that the chart feed does not. A degraded state exists for the trades panel but not for the order panel, so an outage renders as placeholder dashes, indistinguishable from the empty-input state.</dd>
+        <dt>Risk</dt><dd>A live chart is read as evidence the venue is healthy. Conflicting signals during price movement contribute to mistimed exits and to disputes attributed to fills rather than feeds.</dd>
+        <dt>Recommendation</dt><dd>Propagate a single venue-health state to all dependent panels. When quotes are unavailable, state so explicitly and offer retry. Add retry with backoff on the quote subscription.</dd>
+      </dl>
+      <figure class="wide clip">
+        <video controls muted preload="metadata" playsinline><source src="clips/a03.mp4" type="video/mp4">clips/a03.mp4</video>
+        <figcaption>Highlight clip for A-03, cut to the key moments and muted. Segments: Rec0 01:10-01:26. The complete, uncut recordings are in section 9.</figcaption>
+      </figure>
+      <figure style="margin-top:1.1rem">
+        <img src="f_042.jpg" alt="Trades panel badged DEGRADED with no rows while the price chart continues updating">
+        <figcaption>Figure A-03.1. Rec0 01:22. Feed degraded, quote fields collapsed, chart still updating.</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>The spot trading screen during continuous use. The Trades panel carries a DEGRADED label with no trade rows, and the quote fields in the order panel have collapsed to dashes. At the same time the price chart and the ticker strip keep moving normally.</dd><dt>Severity</dt><dd>P2 (A-03). Placing an order is temporarily impossible, but the condition recovers and a retry is possible.</dd><dt>Cause</dt><dd>The trade feed and the quote service most likely depend on the same backend or share a rate limit, while the chart data comes from a different source. Only the Trades panel has a degraded state; the order panel has none, so an outage looks the same as an empty input.</dd><dt>Possible impact</dt><dd>A moving chart tells the user the venue is healthy. They keep trying to place orders during a price move without knowing that quotes are unavailable, which leads to mistimed entries and exits and to complaints that are wrongly blamed on fills.</dd><dt>Solution</dt><dd>Keep one venue health state and show it on every panel that depends on it. When quotes are unavailable, say so explicitly in the order panel with a Retry action, and retry the quote subscription automatically with increasing delays.</dd><dt>Evidence</dt><dd>Frame taken from recording Rec0 at 01:22 (file spot-session-full.mp4, complete and muted). Open the recording in the Evidence recordings section and play from a few seconds before this time to see the full sequence around the frame.</dd><dt>Steps to reproduce</dt><dd>1. Remain on the pair through sustained interaction. 2. Observe the Trades panel header. 3. Change the order amount and observe the quote fields.</dd><dt>Feedback for the team</dt><dd>When one service fails, every panel that depends on it should say so in the same way. A moving chart next to an order panel that silently cannot quote is confusing and costly during fast markets. One shared health indicator with a Retry button would remove the mismatch.</dd></dl>
+      </figure>
+    </div>
+
+    <div class="rec">
+      <div class="hd">
+        <span class="id">A-04</span>
+        <span class="pill sev s3">P3 MINOR</span>
+        <h3 style="flex:1 1 100%">Balance display lags swap confirmation by approximately 8 s</h3>
+      </div>
+      <dl class="fields">
+        <dt>Component</dt><dd>Balance display, swap confirmation handler</dd>
+        <dt>Steps</dt>
+        <dd>
+          <ol class="steps">
+            <li>Execute a spot sell.</li>
+            <li>On the success toast, read the balance rows.</li>
+            <li>Wait for the next poll interval.</li>
+          </ol>
+        </dd>
+        <dt>Expected</dt><dd>Balances reflect the settled trade when confirmation is displayed, or show an explicit pending state.</dd>
+        <dt>Actual</dt><dd><code>Swap Success</code> toast displays with signature while balances still read <code>0.2 SOL</code> and <code>0 USDC</code>. Updated values (<code>0.148077 SOL</code>, <code>5.15 USDC</code>) appear approximately 8 s later.</dd>
+        <dt>Frequency</dt><dd>2 of 2 swaps in Rec0. First swap: toast 00:22, balance 00:30 (about 8 s). Second swap of 0.01 SOL, submitted at 00:30 while the balance was still stale: toast 00:31, balance 00:41 (about 10 s).</dd>
+        <dt>Root cause</dt><dd>Hypothesis: balances are sourced from a fixed-interval poll that is not invalidated on swap confirmation.</dd>
+        <dt>Risk</dt><dd>Users resubmit when figures do not update. Combined with A-01, which leaves the action enabled, this permits a duplicate real order. That outcome meets the <strong>P0</strong> definition.</dd>
+        <dt>Recommendation</dt><dd>Invalidate and refetch the balance query in the swap confirmation handler. Display an optimistic pending value in the interim.</dd>
+      </dl>
+      <figure class="wide clip">
+        <video controls muted preload="metadata" playsinline><source src="clips/a04.mp4" type="video/mp4">clips/a04.mp4</video>
+        <figcaption>Highlight clip for A-04, cut to the key moments and muted. Segments: Rec0 00:14-00:44. The complete, uncut recordings are in section 9.</figcaption>
+      </figure>
+      <figure class="wide tall">
+        <img src="ev/a04-1-toast.jpg" alt="Sell panel with Swap Success toast while balance still reads 0.2 SOL and 0 USDC">
+        <figcaption>Figure A-04.1. Rec0 00:22. First swap succeeds (3ZXJ...); balance still 0.2 SOL and 0 USDC.</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>The Sell tab right after a 0.05 SOL sale. A Swap Success notification with transaction 3ZXJ... is shown at the bottom. In the same frame Your balance still reads 0.2 SOL and the USDC balance still reads 0 USDC, as if the sale had not happened.</dd><dt>Severity</dt><dd>P3 (A-04). A display delay that does not change the real balance, but can lead the user to act on outdated numbers.</dd><dt>Cause</dt><dd>Balances are refreshed on a fixed polling interval. The success of the swap does not trigger an immediate refresh, so the numbers stay old until the next scheduled poll, about 8 seconds later in this recording.</dd><dt>Possible impact</dt><dd>The user sees success but unchanged balances, and the natural reaction is to doubt the result and trade again. Combined with A-01, where the button stays enabled, this can turn into an unintended second order.</dd><dt>Solution</dt><dd>Request fresh balances inside the swap confirmation handler, and while the new values are loading show a pending state or the expected new balance instead of the old one.</dd><dt>Evidence</dt><dd>Frame taken from recording Rec0 at 00:22 (file spot-session-full.mp4, complete and muted). Open the recording in the Evidence recordings section and play from a few seconds before this time to see the full sequence around the frame.</dd><dt>Steps to reproduce</dt><dd>1. Execute a spot sell. 2. On the success toast, read the balance rows. 3. Wait for the next poll interval.</dd><dt>Feedback for the team</dt><dd>Refresh balances immediately when a trade confirms instead of waiting for the next poll. Showing the expected new balance while the refresh runs would stop users from trading again on old numbers, which is exactly what happened in the recording.</dd></dl>
+      </figure>
+      <figure class="wide tall">
+        <img src="ev/a04-2-updated.jpg" alt="Sell panel at 00:31 with second Swap Success toast and balance reflecting only the first swap">
+        <figcaption>Figure A-04.2. Rec0 00:31. Balance reaches 0.148077 SOL, reflecting only the first swap, while the second swap (4xwR...) has already succeeded. Its balance, 0.137792 SOL, appears at 00:41.</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>The same panel nine seconds later. Your balance now reads 0.148077 SOL and USDC reads 5.15, which reflects only the first sale. A second Swap Success notification, transaction 4xwR..., is already on screen for a second sale of 0.01 SOL that was sent while the balance was still outdated.</dd><dt>Severity</dt><dd>P3 (A-04). This figure shows the delay repeating and overlapping with a second trade.</dd><dt>Cause</dt><dd>The same polling delay. The second sale was submitted before the first sale was reflected, and its own result only appears in the balance at 00:41, roughly 10 seconds after its notification.</dd><dt>Possible impact</dt><dd>The recording shows the exact risk described in figure A-04.1 actually happening: the user traded again while looking at a stale balance. With larger amounts this can cause selling more than intended.</dd><dt>Solution</dt><dd>Same fix as figure A-04.1. In addition, show recent pending trades next to the balance so the user can see which orders are already included.</dd><dt>Evidence</dt><dd>Frame taken from recording Rec0 at 00:31 (file spot-session-full.mp4, complete and muted). Open the recording in the Evidence recordings section and play from a few seconds before this time to see the full sequence around the frame.</dd><dt>Steps to reproduce</dt><dd>1. Execute a spot sell. 2. On the success toast, read the balance rows. 3. Wait for the next poll interval.</dd><dt>Feedback for the team</dt><dd>Refresh balances immediately when a trade confirms instead of waiting for the next poll. Showing the expected new balance while the refresh runs would stop users from trading again on old numbers, which is exactly what happened in the recording.</dd></dl>
+      </figure>
+      <button class="jump" data-v="rec0" data-t="16">Play Rec0 at 00:16</button>
+    </div>
+
+    <div class="rec">
+      <div class="hd">
+        <span class="id">A-13</span>
+        <span class="pill sev s2">P2 MEDIUM</span>
+        <h3 style="flex:1 1 100%">Trader state request rate limited (429); account shown as unverified with zero balance and no automatic retry</h3>
+      </div>
+      <dl class="fields">
+        <dt>Component</dt><dd>Perps trader state loading, positions tab, order ticket</dd>
+        <dt>Preconditions</dt><dd>Registered trader with USD 10 collateral and one open position. Perps page open, ETH-PERP.</dd>
+        <dt>Steps</dt>
+        <dd>
+          <ol class="steps">
+            <li>Open a perps market while registered, with collateral and an open position.</li>
+            <li>Stay on the page, or switch markets a few times.</li>
+            <li>Read the Positions tab and the order ticket.</li>
+            <li>Wait without touching Retry and note whether the state recovers.</li>
+          </ol>
+        </dd>
+        <dt>Expected</dt><dd>A transient 429 is retried automatically with backoff. Last known positions and balance stay on screen, marked as refreshing.</dd>
+        <dt>Actual</dt><dd>00:46:49: the positions area reads <code>Could not verify Phoenix registration.</code> <code>Phoenix trader state 429</code> with a Retry link. At the same moment the ticket falls back to the unregistered state: <code>Deposit USDC to trade</code>, <code>Available to Trade $0.00</code>, <code>Positions (0)</code>, order leverage blank. 00:46:57: the state is back, <code>Available to Trade $9.95</code>, <code>Positions (1)</code>, leverage 25.0x. The screenshots do not show whether Retry was tapped; the tester reports the page does not refresh on its own and positions are often unreadable.</dd>
+        <dt>Frequency</dt><dd>Reported as frequent by the tester. 2 captures on 14 Sep 2026, at 00:46 and 13:57 (mobile layout, filter All). The same 429 appears in A-05 (Rec5 01:36) on a different day.</dd>
+        <dt>Root cause</dt><dd>The trader state endpoint (or the RPC behind it) is rate limited, and the client treats the failed read as "not registered, no collateral, no positions" instead of "unknown". No automatic retry is scheduled. The recurrence on 13 and 14 September makes this the likely common cause behind A-05 hypothesis B.</dd>
+        <dt>Risk</dt><dd>During the error the account shows zero balance and zero positions while a leveraged position is open, so the user cannot monitor or close it. A user who believes the account is unregistered may register or deposit again. Workaround: Retry or reload.</dd>
+        <dt>Recommendation</dt><dd>1. Keep the last successful trader state and show it as stale with a timestamp; never substitute zeros for an unknown. 2. Retry 429 automatically with exponential backoff and jitter, honoring Retry-After. 3. Deduplicate and cache trader state reads across components (one request per wallet per interval), and prefer a websocket or account subscription over polling. 4. Keep order entry for closing positions available from the cached state.</dd>
+      </dl>
+      <figure class="wide">
+        <img src="ev/a13-1-error.jpg" alt="Positions area with 429 error and ticket showing zero available">
+        <figcaption>Figure A-13.1. 14 Sep 2026 00:46:49. Could not verify Phoenix registration, 429; Available $0.00; Positions (0).</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>The ETH-PERP screen on 14 September at 00:46:49. The positions area reads Could not verify Phoenix registration, followed by Phoenix trader state 429 in red and a Retry link. The order ticket on the right has fallen back to the state of a brand new user: Deposit USDC to trade, Available to Trade $0.00, Position 0, and the leverage value is blank.</dd><dt>Severity</dt><dd>P2 (A-13). The account becomes unreadable for a short time, and Retry or a reload restores it.</dd><dt>Cause</dt><dd>The same account state lookup seen in A-05 is rate limited again. When the lookup fails, the interface does not treat the result as unknown; it treats it as not registered, no collateral and no positions, and renders zeros.</dd><dt>Possible impact</dt><dd>While a leveraged position is still open, the user sees zero balance and zero positions and cannot monitor or close the position from this screen. A user who believes the account was reset may try to register again or deposit more funds.</dd><dt>Solution</dt><dd>Keep the last successful account state on screen and mark it as outdated with the time it was loaded. Never replace an unknown value with zero. Retry rate-limited lookups automatically, and reduce the number of lookups by sharing one cached result across all panels.</dd><dt>Evidence</dt><dd>Device screenshot taken at 00:46:49 on 14 September 2026. The file is kept unedited with the original screenshots of the session.</dd><dt>Steps to reproduce</dt><dd>1. Open a perps market while registered, with collateral and an open position. 2. Stay on the page, or switch markets a few times. 3. Read the Positions tab and the order ticket. 4. Wait without touching Retry and note whether the state recovers.</dd><dt>Feedback for the team</dt><dd>Account data should never switch to zero because one request failed. Keep the last known positions and balance on screen with the time they were loaded, refresh automatically in the background with retries, and share one cached result across all panels to reduce the number of requests that hit the rate limit. This also addresses the positions that disappear until the browser is refreshed.</dd></dl>
+      </figure>
+      <figure class="wide">
+        <img src="ev/a13-2-recovered.jpg" alt="Ticket showing 9.95 available and one position">
+        <figcaption>Figure A-13.2. 14 Sep 2026 00:46:57. State restored: Available $9.95; Positions (1).</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>The same screen eight seconds later, at 00:46:57. The ticket now shows Available to Trade $9.95, the leverage reads 25.0x, and the tab reads Positions (1). The account data is back without any change to the account itself.</dd><dt>Severity</dt><dd>P2 (A-13). This figure confirms that figure A-13.1 was a display failure.</dd><dt>Cause</dt><dd>The next account lookup succeeded. The collateral and the position were never lost; only the request to read them had failed.</dd><dt>Possible impact</dt><dd>It proves that the zeros in figure A-13.1 were false. Any decision a user made during those eight seconds, such as depositing again, would have been based on wrong data.</dd><dt>Solution</dt><dd>Same fix as figure A-13.1.</dd><dt>Evidence</dt><dd>Device screenshot taken at 00:46:57 on 14 September 2026. The file is kept unedited with the original screenshots of the session.</dd><dt>Steps to reproduce</dt><dd>1. Open a perps market while registered, with collateral and an open position. 2. Stay on the page, or switch markets a few times. 3. Read the Positions tab and the order ticket. 4. Wait without touching Retry and note whether the state recovers.</dd><dt>Feedback for the team</dt><dd>Account data should never switch to zero because one request failed. Keep the last known positions and balance on screen with the time they were loaded, refresh automatically in the background with retries, and share one cached result across all panels to reduce the number of requests that hit the rate limit. This also addresses the positions that disappear until the browser is refreshed.</dd></dl>
+      </figure>
+      <figure class="wide mid">
+        <img src="ev/a13-3-mobile.jpg" alt="Mobile perps screen with filter All showing Positions 0 and No positions">
+        <figcaption>Figure A-13.3. 14 Sep 2026 13:57, mobile layout. Filter All, Positions (0), No positions; the tester reports a position was open and reappeared after a browser refresh.</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>The perps screen in the mobile layout on 14 September at 13:57, viewing ETH-PERP. The Positions tab is open with the market filter set to All, which should list every open position on every market. The tab reads Positions (0), Open Orders (0), and the table reads No positions. The tester reports that a position was open at the time and reappeared after refreshing the browser.</dd><dt>Severity</dt><dd>P2 (A-13). Positions disappear from view without any action by the user and come back after a reload.</dd><dt>Cause</dt><dd>Unlike A-10, the filter here is All, so the empty table cannot be explained by the market filter. The most likely cause is the same one shown in figure A-13.1: the account state request fails or returns late, and the interface renders the failed result as an empty account. There is no visible error in this frame, which suggests the failure is sometimes silent, and no cached copy of the last good state is kept.</dd><dt>Possible impact</dt><dd>Open positions can vanish from the screen at any time, even with the widest filter. The user cannot tell whether the position was closed, liquidated or is simply not loaded, and has to refresh the browser to find out. On a leveraged position this delay can be costly.</dd><dt>Solution</dt><dd>Cache the last successful account state per wallet and keep showing it, marked with the time it was loaded, while a new request runs. Refresh positions automatically on an interval and after every order, retry failures with increasing delays, and show a visible Refreshing or Could not load state instead of an empty table.</dd><dt>Evidence</dt><dd>Device screenshot taken at 13:57 on 14 September 2026. The file is kept unedited with the original screenshots of the session.</dd><dt>Steps to reproduce</dt><dd>1. Open a perps market while registered, with collateral and an open position. 2. Stay on the page, or switch markets a few times. 3. Read the Positions tab and the order ticket. 4. Wait without touching Retry and note whether the state recovers.</dd><dt>Feedback for the team</dt><dd>Account data should never switch to zero because one request failed. Keep the last known positions and balance on screen with the time they were loaded, refresh automatically in the background with retries, and share one cached result across all panels to reduce the number of requests that hit the rate limit. This also addresses the positions that disappear until the browser is refreshed.</dd></dl>
+      </figure>
+    </div>
+
+    <div class="rec">
+      <div class="hd">
+        <span class="id">A-07</span>
+        <span class="pill sev s2">P2 MEDIUM</span>
+        <h3 style="flex:1 1 100%">Perps market list fetch failure shown as an empty category</h3>
+      </div>
+      <dl class="fields">
+        <dt>Component</dt><dd>Perps left panel market list, market header</dd>
+        <dt>Preconditions</dt><dd>Perps page open for more than 60 s, switching markets.</dd>
+        <dt>Steps</dt>
+        <dd>
+          <ol class="steps">
+            <li>Open Perps with the All category selected.</li>
+            <li>Switch between markets, for example SOL-PERP to AAPL-PERP.</li>
+            <li>Watch the market list and the Mark, Index and Funding fields.</li>
+          </ol>
+        </dd>
+        <dt>Expected</dt><dd>A loading or error state with a retry, and the previous list kept until new data arrives.</dd>
+        <dt>Actual</dt><dd>At Rec2 01:56 the list is populated. By 02:00 the All category reads <code>No markets in this category.</code> and the header shows blank Mark, Index and Funding. The tester reports that on other occasions the panel prints an API error; that text was not captured in these recordings.</dd>
+        <dt>Frequency</dt><dd>Intermittent. 1 capture in Rec2.</dd>
+        <dt>Root cause</dt><dd>Hypothesis: the markets request fails or times out and the empty response is rendered through the empty-state branch. The All category cannot legitimately be empty, so this is a failed fetch displayed as data.</dd>
+        <dt>Risk</dt><dd>Users conclude markets were delisted. Workaround: reload.</dd>
+        <dt>Recommendation</dt><dd>Distinguish error from empty. Keep the last good list (stale-while-revalidate), show "Could not load markets. Retry", and retry with backoff.</dd>
+      </dl>
+      <figure class="wide clip">
+        <video controls muted preload="metadata" playsinline><source src="clips/a07.mp4" type="video/mp4">clips/a07.mp4</video>
+        <figcaption>Highlight clip for A-07, cut to the key moments and muted. Segments: Rec2 01:48-02:07. The complete, uncut recordings are in section 9.</figcaption>
+      </figure>
+      <figure class="wide mid">
+        <img src="ev/a07-1-loaded.jpg" alt="Perps market list populated">
+        <figcaption>Figure A-07.1. Rec2 01:56. Market list loaded.</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>The perps market list in its normal state. The All category is selected and lists AAPL-PERP, AAVE-PERP, ADA-PERP, AMAT-PERP, AMD-PERP and AMZN-PERP, each with price, funding rate and 24 hour change.</dd><dt>Severity</dt><dd>Context for A-07. This figure is the normal baseline for comparison.</dd><dt>Cause</dt><dd>No defect in this step.</dd><dt>Possible impact</dt><dd>It shows what the list should look like, so the empty list in the next figure can be recognised as a failure rather than a real change.</dd><dt>Solution</dt><dd>No action for this figure.</dd><dt>Evidence</dt><dd>Frame taken from recording Rec2 at 01:56 (file rec-2-balances-perps.mp4, complete and muted). Open the recording in the Evidence recordings section and play from a few seconds before this time to see the full sequence around the frame.</dd><dt>Steps to reproduce</dt><dd>1. Open Perps with the All category selected. 2. Switch between markets, for example SOL-PERP to AAPL-PERP. 3. Watch the market list and the Mark, Index and Funding fields.</dd><dt>Feedback for the team</dt><dd>An empty list and a failed request must look different. Keeping the last good list on screen while loading, and showing a clear error with Retry when loading fails, will stop users from thinking markets were removed.</dd></dl>
+      </figure>
+      <figure class="wide mid">
+        <img src="ev/a07-2-empty.jpg" alt="Perps market list empty">
+        <figcaption>Figure A-07.2. Rec2 02:02. All category reads No markets in this category.</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>The same All category a few seconds later now reads No markets in this category. The list area is empty, although the chart of AAPL-PERP is still visible on the right.</dd><dt>Severity</dt><dd>P2 (A-07). Markets temporarily disappear from the list; reloading the page brings them back.</dd><dt>Cause</dt><dd>The All category can never be empty on a working exchange, so this is a failed request for the market list that is being displayed through the empty result screen. The interface does not distinguish between no data returned and data that could not be loaded.</dd><dt>Possible impact</dt><dd>Users may believe markets were delisted or that the exchange is shutting down. They cannot switch markets until they reload. The tester also reports that the panel sometimes shows an API error text in the same place.</dd><dt>Solution</dt><dd>Keep showing the last list that loaded successfully while a new request is in progress. If loading fails, show Could not load markets with a Retry button, and retry automatically after a short delay.</dd><dt>Evidence</dt><dd>Frame taken from recording Rec2 at 02:02 (file rec-2-balances-perps.mp4, complete and muted). Open the recording in the Evidence recordings section and play from a few seconds before this time to see the full sequence around the frame.</dd><dt>Steps to reproduce</dt><dd>1. Open Perps with the All category selected. 2. Switch between markets, for example SOL-PERP to AAPL-PERP. 3. Watch the market list and the Mark, Index and Funding fields.</dd><dt>Feedback for the team</dt><dd>An empty list and a failed request must look different. Keeping the last good list on screen while loading, and showing a clear error with Retry when loading fails, will stop users from thinking markets were removed.</dd></dl>
+      </figure>
+      <button class="jump" data-v="rec2" data-t="110">Play Rec2 at 01:50</button>
+    </div>
+
+    <div class="rec">
+      <div class="hd">
+        <span class="id">A-08</span>
+        <span class="pill sev s2">P2 MEDIUM</span>
+        <h3 style="flex:1 1 100%">Trader registration stalls on Registering until the page is reloaded</h3>
+      </div>
+      <dl class="fields">
+        <dt>Component</dt><dd>Perps onboarding, Register as a Phoenix trader</dd>
+        <dt>Preconditions</dt><dd>Wallet not yet registered. At least 0.02 SOL available for account rent.</dd>
+        <dt>Steps</dt>
+        <dd>
+          <ol class="steps">
+            <li>Open any perps market. Tap Register.</li>
+            <li>Wait with the page open.</li>
+            <li>Reload the page and tap Register again.</li>
+          </ol>
+        </dd>
+        <dt>Expected</dt><dd>Registration completes, or fails with a reason and a retry, within a bounded time.</dd>
+        <dt>Actual</dt><dd>Rec3: the button reads <code>Registering...</code> from 00:36 until the recording ends at 01:02, with no progress or error. The tester reports it stayed that way for hours. After a reload (Rec5) registration completes in about 5 s and the toast <code>Trader registered</code> appears at 00:19.</dd>
+        <dt>Frequency</dt><dd>1 of 1 first attempt stalled; 1 of 1 attempt after reload succeeded.</dd>
+        <dt>Root cause</dt><dd>Hypothesis: the client waits for a confirmation event that was missed, or the transaction was never sent, and there is no timeout. After reload the account lookup finds the finished or pending state.</dd>
+        <dt>Risk</dt><dd>Perps is unreachable for a first-time user until they guess to reload. Rent may already be paid.</dd>
+        <dt>Recommendation</dt><dd>Poll the account address after sending, time out at about 30 s, then show the signature with "Check again" and "Retry". On load, detect an existing trader account before offering Register.</dd>
+      </dl>
+      <figure class="wide clip">
+        <video controls muted preload="metadata" playsinline><source src="clips/a08.mp4" type="video/mp4">clips/a08.mp4</video>
+        <figcaption>Highlight clip for A-08, cut to the key moments and muted. Segments: Rec3 00:30-01:02, Rec5 00:06-00:24. The complete, uncut recordings are in section 9.</figcaption>
+      </figure>
+        <figure class="wide">
+          <img src="ev/b05-register.jpg" alt="Positions panel with the Registering button still pending">
+          <figcaption>Figure A-08.1. Rec3 00:58. Registering since 00:36.</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>The Positions area of a perps market for a wallet that is not yet registered. It reads Register as a Phoenix trader to see positions and Wallet EZTfnD...2uE74P needs ~0.02 SOL for rent and fees. The green button reads Registering... and has shown that text since 00:36, with no progress indicator, error or time estimate.</dd><dt>Severity</dt><dd>P2 (A-08). Perps trading is blocked for a new user, but reloading the page resolves it.</dd><dt>Cause</dt><dd>The application sends the registration and then waits for a confirmation event. That event is either missed or never sent, and there is no timeout, so the waiting state never ends.</dd><dt>Possible impact</dt><dd>A first-time user cannot reach perps trading at all. The tester reports the button stayed on Registering for hours. The rent for the account may already have been paid, so the user may also think funds were lost.</dd><dt>Solution</dt><dd>After sending the registration, check the account address on chain every few seconds. If it is not confirmed within about 30 seconds, show the transaction link together with Check again and Retry buttons.</dd><dt>Evidence</dt><dd>Frame taken from recording Rec3 at 00:58 (file rec-3-perps-register.mp4, complete and muted). Open the recording in the Evidence recordings section and play from a few seconds before this time to see the full sequence around the frame.</dd><dt>Steps to reproduce</dt><dd>1. Open any perps market. Tap Register. 2. Wait with the page open. 3. Reload the page and tap Register again.</dd><dt>Feedback for the team</dt><dd>No waiting state should last forever. Add a timeout, check the chain for the account directly, and give the user a clear next step. Detecting an existing trader account on page load would also remove the need to reload.</dd></dl>
+        </figure>
+        <figure class="wide">
+          <img src="ev/b05-reload.jpg" alt="Trader registered toast after page reload">
+          <figcaption>Figure A-08.2. Rec5 00:19. After reload, registered within seconds.</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>The same flow after a full page reload. Register is pressed again, and a few seconds later a Trader registered notification appears. The collateral panel is now available, showing Available to deposit $15.41.</dd><dt>Severity</dt><dd>P2 (A-08). This figure shows the workaround and confirms the cause.</dd><dt>Cause</dt><dd>Reloading makes the application look up the account from scratch, and that lookup finds the real state. This shows the problem was in the waiting logic of the page, not on the blockchain.</dd><dt>Possible impact</dt><dd>It proves that registration can succeed in about 5 seconds. Users who do not think of reloading are stuck without reason.</dd><dt>Solution</dt><dd>When the page loads, check whether a trader account already exists before showing the Register button, and apply the timeout and retry described in figure A-08.1.</dd><dt>Evidence</dt><dd>Frame taken from recording Rec5 at 00:19 (file rec-5-perps-orders.mp4, complete and muted). Open the recording in the Evidence recordings section and play from a few seconds before this time to see the full sequence around the frame.</dd><dt>Steps to reproduce</dt><dd>1. Open any perps market. Tap Register. 2. Wait with the page open. 3. Reload the page and tap Register again.</dd><dt>Feedback for the team</dt><dd>No waiting state should last forever. Add a timeout, check the chain for the account directly, and give the user a clear next step. Detecting an existing trader account on page load would also remove the need to reload.</dd></dl>
+        </figure>
+      <button class="jump" data-v="rec3" data-t="30">Play Rec3 at 00:30</button>
+      <button class="jump" data-v="rec5" data-t="8">Play Rec5 at 00:08</button>
+    </div>
+
+    <div class="rec">
+      <div class="hd">
+        <span class="id">A-09</span>
+        <span class="pill sev s2">P2 MEDIUM</span>
+        <h3 style="flex:1 1 100%">First collateral deposit fails: Quote not ready to sign</h3>
+      </div>
+      <dl class="fields">
+        <dt>Component</dt><dd>Perps collateral deposit</dd>
+        <dt>Preconditions</dt><dd>Trader registered seconds earlier. Spot USDC 11.8, SOL 0.0611.</dd>
+        <dt>Steps</dt>
+        <dd>
+          <ol class="steps">
+            <li>Immediately after registration, deposit the full available amount (USD 15.41).</li>
+            <li>Observe the result toast.</li>
+            <li>Retry with USD 10.</li>
+          </ol>
+        </dd>
+        <dt>Expected</dt><dd>The deposit action is unavailable until its quote is ready, or the quote is fetched on tap.</dd>
+        <dt>Actual</dt><dd>Toast <code>Funding Failed</code>, USDC, USD 15.41, <code>Quote not ready to sign - refresh and try again</code>. At 00:48 a USD 10 deposit succeeds with <code>Collateral Updated</code>.</dd>
+        <dt>Frequency</dt><dd>1 of 2 deposit attempts.</dd>
+        <dt>Root cause</dt><dd>Hypothesis: the available amount (11.8 USDC plus 0.0611 SOL) needs a SOL to USDC swap quote, which was still loading when the action was enabled. USD 10 was covered by USDC alone.</dd>
+        <dt>Risk</dt><dd>Failed first funding at the moment of highest intent. Workaround: retry.</dd>
+        <dt>Recommendation</dt><dd>Disable the action while the quote is pending and label it "Preparing quote". On tap with a stale quote, refetch and continue instead of failing.</dd>
+      </dl>
+      <figure class="wide clip">
+        <video controls muted preload="metadata" playsinline><source src="clips/a09.mp4" type="video/mp4">clips/a09.mp4</video>
+        <figcaption>Highlight clip for A-09, cut to the key moments and muted. Segments: Rec5 00:22-00:54. The complete, uncut recordings are in section 9.</figcaption>
+      </figure>
+      <figure class="wide tall">
+        <img src="ev/b06-funding.jpg" alt="Funding Failed toast with Quote not ready to sign">
+        <figcaption>Figure A-09.1. Rec5 00:28. Funding Failed: Quote not ready to sign.</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>A red Funding Failed notification shown immediately after registration. It lists Position USDC Long, Size $15.41, Price blank, Order Type Market, and the reason Quote not ready to sign - refresh and try again. $15.41 was the full amount available to deposit.</dd><dt>Severity</dt><dd>P2 (A-09). The first deposit fails, but retrying with a smaller amount succeeded 20 seconds later.</dd><dt>Cause</dt><dd>The available amount consists of 11.8 USDC plus 0.0611 SOL. The SOL part must be swapped to USDC first, and the quote for that swap was still loading when the deposit button became active. A later deposit of USD 10, covered by USDC alone, succeeded.</dd><dt>Possible impact</dt><dd>The first deposit fails at the moment the user is most motivated to start trading. The message also asks the user to refresh, which is a technical instruction rather than a clear next step.</dd><dt>Solution</dt><dd>Keep the deposit button disabled with the label Preparing quote while the swap quote loads. If the user taps with an outdated quote, fetch a new quote and continue automatically instead of failing.</dd><dt>Evidence</dt><dd>Frame taken from recording Rec5 at 00:28 (file rec-5-perps-orders.mp4, complete and muted). Open the recording in the Evidence recordings section and play from a few seconds before this time to see the full sequence around the frame.</dd><dt>Steps to reproduce</dt><dd>1. Immediately after registration, deposit the full available amount (USD 15.41). 2. Observe the result toast. 3. Retry with USD 10.</dd><dt>Feedback for the team</dt><dd>The first deposit is the moment a new trader decides whether to stay. Do not enable the deposit button until its quote is ready, and if a quote expires, fetch a new one automatically instead of asking the user to refresh.</dd></dl>
+      </figure>
+      <button class="jump" data-v="rec5" data-t="22">Play Rec5 at 00:22</button>
+    </div>
+
+    <div class="rec">
+      <div class="hd">
+        <span class="id">A-10</span>
+        <span class="pill sev s2">P2 MEDIUM</span>
+        <h3 style="flex:1 1 100%">Positions tab reads Positions (1) while listing No positions</h3>
+      </div>
+      <dl class="fields">
+        <dt>Component</dt><dd>Perps positions table, market filter</dd>
+        <dt>Preconditions</dt><dd>One open position on a market other than the one being viewed.</dd>
+        <dt>Steps</dt>
+        <dd>
+          <ol class="steps">
+            <li>Open a SOL-PERP position.</li>
+            <li>Navigate to ETH-PERP.</li>
+            <li>Read the Positions tab label and the table.</li>
+          </ol>
+        </dd>
+        <dt>Expected</dt><dd>Count and list agree, or the filter reads "1 position on other markets. Show all".</dd>
+        <dt>Actual</dt><dd>Label <code>Positions (1)</code>; filter defaults to ETH; table reads <code>No positions</code>. Selecting Both shows the SOL-PERP short.</dd>
+        <dt>Frequency</dt><dd>Deterministic, follows from the filter default.</dd>
+        <dt>Root cause</dt><dd>The count is computed across all markets; the list is filtered to the current market.</dd>
+        <dt>Risk</dt><dd>Users believe an open, leveraged position has disappeared, and may open offsetting positions on the wrong market. Combined with A-05, it made a real position change unverifiable from one screen.</dd>
+        <dt>Recommendation</dt><dd>Default the filter to All, or scope the count to the filter and add a "Show all" link when other markets hold positions. Show the number of open positions next to each market in the market list, for example SOL-PERP (1), so traders see where positions are open.</dd>
+      </dl>
+      <figure class="wide">
+        <img src="ev/a10-1-count.jpg" alt="Positions tab with count one and empty table">
+        <figcaption>Figure A-10.1. Screenshot 22:14, ETH-PERP. Tab reads Positions (1); table reads No positions.</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>The Positions area while viewing ETH-PERP. The tab label reads Positions (1), which says there is one open position, but the table below reads No positions. The market filter is set to ETH.</dd><dt>Severity</dt><dd>P2 (A-10). The position is not lost and can be found by changing the filter, so a workaround exists.</dd><dt>Cause</dt><dd>The number in the tab label counts positions across all markets, while the table is filtered to the market currently on screen. The only open position is on SOL-PERP, so the ETH filter hides it.</dd><dt>Possible impact</dt><dd>The two numbers on the same screen contradict each other. Users can believe an open leveraged position has vanished, and may open offsetting trades on the wrong market. Together with A-05 it made the real account state very hard to understand.</dd><dt>Solution</dt><dd>Set the default filter to All, or make the count follow the active filter and add a line such as 1 position on other markets, Show all. In addition, show the number of open positions next to each market in the market list, for example SOL-PERP (1), so the user can see at a glance where positions are open.</dd><dt>Evidence</dt><dd>Device screenshot taken at 22:14 on 13 September 2026. The file is kept unedited with the original screenshots of the session.</dd><dt>Steps to reproduce</dt><dd>1. Open a SOL-PERP position. 2. Navigate to ETH-PERP. 3. Read the Positions tab label and the table.</dd><dt>Feedback for the team</dt><dd>The number in the tab and the list below it must agree. Defaulting to All, or showing how many positions are on other markets, and adding a small count next to each market name, would let traders find every open position at a glance.</dd></dl>
+      </figure>
+      <figure class="wide">
+        <img src="ev/a10-2-both.jpg" alt="Positions table with filter Both showing a SOL-PERP short">
+        <figcaption>Figure A-10.2. Screenshot 22:28. Filter Both lists the SOL-PERP short.</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>The same Positions area with the filter switched to Both. The table now lists SOL-PERP Short, Size 0.01 SOL, Position Value $1.01, Entry $100.38, Mark $100.53, Liq $105.37 and uPnL -$0.015.</dd><dt>Severity</dt><dd>P2 (A-10). This figure confirms the position existed all along.</dd><dt>Cause</dt><dd>Changing the filter removes the market restriction, so the hidden position appears.</dd><dt>Possible impact</dt><dd>It proves that No positions in figure A-10.1 was caused by the filter default and not by any change to the account.</dd><dt>Solution</dt><dd>Same fix as figure A-10.1.</dd><dt>Evidence</dt><dd>Device screenshot taken at 22:28 on 13 September 2026. The file is kept unedited with the original screenshots of the session.</dd><dt>Steps to reproduce</dt><dd>1. Open a SOL-PERP position. 2. Navigate to ETH-PERP. 3. Read the Positions tab label and the table.</dd><dt>Feedback for the team</dt><dd>The number in the tab and the list below it must agree. Defaulting to All, or showing how many positions are on other markets, and adding a small count next to each market name, would let traders find every open position at a glance.</dd></dl>
+      </figure>
+    </div>
+
+    <div class="rec">
+      <div class="hd">
+        <span class="id">A-11</span>
+        <span class="pill sev s2">P2 MEDIUM</span>
+        <h3 style="flex:1 1 100%">Perps chart has no candle interval selector or label</h3>
+      </div>
+      <dl class="fields">
+        <dt>Component</dt><dd>Perps chart toolbar and time axis</dd>
+        <dt>Steps</dt>
+        <dd>
+          <ol class="steps">
+            <li>Open a spot pair and note the interval buttons above the chart.</li>
+            <li>Open SOL-PERP.</li>
+            <li>Look for an interval control; collapse and expand the sidebar; tap a candle.</li>
+          </ol>
+        </dd>
+        <dt>Expected</dt><dd>Interval selector and visible interval on perps, at least matching spot. Crosshair shows date and time.</dd>
+        <dt>Actual</dt><dd>Spot shows <code>1M 5M 15M 1H 4H 1D</code>. Perps shows none, and no interval label. The time axis repeats the day number (<code>13 13 13 13</code>) with no time of day, and tapping a candle shows the date only. Toggling the sidebar does not reveal a toolbar.</dd>
+        <dt>Frequency</dt><dd>Always. All perps markets observed.</dd>
+        <dt>Root cause</dt><dd>Hypothesis: the perps chart is a separate component that fixes the interval and uses a date-only tick formatter.</dd>
+        <dt>Risk</dt><dd>Traders cannot tell whether a candle is 1 minute or 1 hour, so price structure, stops and leverage decisions rest on an unknown scale. No in-app workaround.</dd>
+        <dt>Recommendation</dt><dd>Reuse the spot interval control on perps, show the active interval in the chart legend, and format ticks and crosshair as date plus HH:mm below 1D.</dd>
+      </dl>
+      <figure class="wide clip">
+        <video controls muted preload="metadata" playsinline><source src="clips/a11.mp4" type="video/mp4">clips/a11.mp4</video>
+        <figcaption>Highlight clip for A-11, cut to the key moments and muted. Segments: Rec4 00:00-00:25. The complete, uncut recordings are in section 9.</figcaption>
+      </figure>
+      <figure class="wide">
+        <img src="ev/a11-1-spot.jpg" alt="Spot chart toolbar with interval buttons">
+        <figcaption>Figure A-11.1. Rec4 00:05. Spot chart offers 1M, 5M, 15M, 1H, 4H, 1D.</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>The price chart of a spot pair. Above the chart there is a row of interval buttons, 1M, 5M, 15M, 1H, 4H and 1D, with 5M highlighted as active, next to Price and Mcap view options.</dd><dt>Severity</dt><dd>Reference for A-11. This figure shows correct behaviour on spot for comparison.</dd><dt>Cause</dt><dd>Spot uses a chart component that includes an interval selector.</dd><dt>Possible impact</dt><dd>It shows that the product already has a working interval control, so adding it to perps is a matter of reuse.</dd><dt>Solution</dt><dd>Use this same control on the perps chart.</dd><dt>Evidence</dt><dd>Frame taken from recording Rec4 at 00:05 (file rec-4-perps-timeframe.mp4, complete and muted). Open the recording in the Evidence recordings section and play from a few seconds before this time to see the full sequence around the frame.</dd><dt>Steps to reproduce</dt><dd>1. Open a spot pair and note the interval buttons above the chart. 2. Open SOL-PERP. 3. Look for an interval control; collapse and expand the sidebar; tap a candle.</dd><dt>Feedback for the team</dt><dd>Perps traders depend on short time frames more than spot traders do. Bringing the spot interval buttons to the perps chart and showing hours and minutes on the time axis is a small change with a large effect on trust.</dd></dl>
+      </figure>
+      <figure class="wide mid">
+        <img src="ev/a11-2-perps.jpg" alt="Perps chart with no interval control">
+        <figcaption>Figure A-11.2. Rec4 00:17. Perps chart has no interval control; axis repeats 13.</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>The SOL-PERP chart. The header shows Mark $99.82, Index $99.73 and Funding 0.3495%, but there is no interval selector and no label saying which interval is displayed. The time axis at the bottom repeats the day number 13 several times with no hours or minutes, and tapping a candle shows only the date. Collapsing and opening the sidebar does not reveal a toolbar.</dd><dt>Severity</dt><dd>P2 (A-11). The chart works but cannot be read correctly, and there is no in-app workaround.</dd><dt>Cause</dt><dd>The perps chart uses a separate component with a fixed interval and an axis format that shows only the date.</dd><dt>Possible impact</dt><dd>Leveraged traders cannot tell whether each candle represents one minute or one hour. Support and resistance, stop placement and leverage choices all depend on that scale, so decisions are made on an unknown basis. It is unusual for perps, where short intervals matter most, to have fewer chart controls than spot.</dd><dt>Solution</dt><dd>Add the same interval selector as spot, show the active interval in the chart legend, and format the time axis and crosshair as date plus hours and minutes for intervals shorter than one day.</dd><dt>Evidence</dt><dd>Frame taken from recording Rec4 at 00:17 (file rec-4-perps-timeframe.mp4, complete and muted). Open the recording in the Evidence recordings section and play from a few seconds before this time to see the full sequence around the frame.</dd><dt>Steps to reproduce</dt><dd>1. Open a spot pair and note the interval buttons above the chart. 2. Open SOL-PERP. 3. Look for an interval control; collapse and expand the sidebar; tap a candle.</dd><dt>Feedback for the team</dt><dd>Perps traders depend on short time frames more than spot traders do. Bringing the spot interval buttons to the perps chart and showing hours and minutes on the time axis is a small change with a large effect on trust.</dd></dl>
+      </figure>
+      <button class="jump" data-v="rec4" data-t="0">Play Rec4 at 00:00</button>
+    </div>
+
+    <div class="rec">
+      <div class="hd">
+        <span class="id">A-12</span>
+        <span class="pill sev s3">P3 MINOR</span>
+        <h3 style="flex:1 1 100%">Empty sell amount reports No SOL balance to sell while balance is present</h3>
+      </div>
+      <dl class="fields">
+        <dt>Component</dt><dd>Spot order panel, Sell tab, validation copy</dd>
+        <dt>Steps</dt>
+        <dd>
+          <ol class="steps">
+            <li>Hold SOL. Open the SOL pair, Sell tab.</li>
+            <li>Leave the amount at 0.</li>
+          </ol>
+        </dd>
+        <dt>Expected</dt><dd>No error for an empty field, or "Enter an amount".</dd>
+        <dt>Actual</dt><dd><code>Your balance 0.063742 SOL</code> and, directly below the input, <code>No SOL balance to sell</code>.</dd>
+        <dt>Frequency</dt><dd>Always with an empty amount.</dd>
+        <dt>Root cause</dt><dd>The zero-amount check reuses the zero-balance message.</dd>
+        <dt>Recommendation</dt><dd>Separate the two validations and their copy.</dd>
+      </dl>
+      <figure class="wide clip">
+        <video controls muted preload="metadata" playsinline><source src="clips/a12.mp4" type="video/mp4">clips/a12.mp4</video>
+        <figcaption>Highlight clip for A-12, cut to the key moments and muted. Segments: Rec1 00:58-01:04. The complete, uncut recordings are in section 9.</figcaption>
+      </figure>
+      <figure class="wide tall">
+        <img src="ev/a12-1-copy.jpg" alt="Sell panel with empty amount and No SOL balance to sell">
+        <figcaption>Figure A-12.1. Rec1 01:00. Balance 0.063742 SOL above the message No SOL balance to sell.</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>The Sell tab of the SOL pair with the amount field left at 0. The panel reads Your balance 0.063742 SOL at the top, and directly under the amount field it prints No SOL balance to sell in red. The Sell SOL button is dimmed.</dd><dt>Severity</dt><dd>P3 (A-12). This is an incorrect message and does not affect funds.</dd><dt>Cause</dt><dd>The check for an empty amount reuses the message written for an empty balance. The two conditions are different but share one piece of text.</dd><dt>Possible impact</dt><dd>The message tells the user that they have no SOL while the same panel shows a positive balance. It can make users think their funds are missing and lead to unnecessary support requests.</dd><dt>Solution</dt><dd>Use a separate message for an empty amount, such as Enter an amount, and keep No SOL balance to sell only for a real zero balance.</dd><dt>Evidence</dt><dd>Frame taken from recording Rec1 at 01:00 (file rec-1-spot-max.mp4, complete and muted). Open the recording in the Evidence recordings section and play from a few seconds before this time to see the full sequence around the frame.</dd><dt>Steps to reproduce</dt><dd>1. Hold SOL. Open the SOL pair, Sell tab. 2. Leave the amount at 0.</dd><dt>Feedback for the team</dt><dd>Error text should describe the real problem. A separate message for an empty amount avoids telling users they have no funds while their balance is visible on the same screen.</dd></dl>
+      </figure>
+      <button class="jump" data-v="rec1" data-t="59">Play Rec1 at 00:59</button>
+    </div>
+  </section>
+
+  <section class="pad">
+    <h2><span class="num">6</span>Improvement proposals</h2>
+    <p class="note" style="margin:0 0 1rem">Not defects. Filed separately for product review.</p>
+    <dl class="fields">
+      <dt>I-01</dt><dd><strong>Take profit and stop loss on the ticket.</strong> The perps ticket offers Market, Limit and Reduce only; there is no way to attach TP or SL at entry. Proposal: TP and SL fields at entry and on open positions, plus staged partial take profit (for example TP1 30 percent, TP2 30 percent, TP3 40 percent) that must sum to 100 percent, each placed as a reduce-only trigger so the position cannot flip. After TP1 fills, offer to move SL to entry.</dd>
+      <dt>I-02</dt><dd><strong>Position lines on the chart.</strong> With a SOL-PERP long open at 100.36 and the SOL-PERP chart on screen (Rec5 01:12), the chart shows no entry or order line; the only record is the table below it. Proposal: entry, TP, SL and liquidation price lines colored by side, draggable for TP and SL, with a one-tap Close button on the entry line so a position can be closed directly from the chart.</dd>
+      <dt>I-03</dt><dd><strong>Resulting position in the confirmation.</strong> Perps positions net per market, so an opposite order of equal size closes the position. The dialog in Rec5 01:33 did not say so. Proposal: a line such as <em>Closes your 0.01 SOL long. Resulting position: none</em>. This would also have exposed A-05 and A-06 immediately.</dd>
+      <dt>I-04</dt><dd><strong>Execution latency.</strong> Measured in Rec5 at 4 fps: Place Short tapped at 01:34.8, Market Order Placed at 01:35.7, about 0.9 s to 1.2 s on screen. The tester reports over 1.2 s on other orders. Proposal: publish p50 and p95 targets, show fill time in the toast, and render an optimistic pending row within 100 ms while settlement completes.</dd>
+      <dt>I-05</dt><dd><strong>Order book depth.</strong> Screenshot 22:14 shows depth bars scaled per level: 226.951 and 119.416 are visible while levels of 3 to 45 almost vanish, and the Size column has no unit. Proposal: cumulative depth bars, a unit in the header with a base or USD toggle, and a spread row between bids and asks.</dd>
+      <dt>I-06</dt><dd><strong>Collateral purpose on screen.</strong> The Collateral block shows available amount and a Swap and deposit action but not what the collateral secures. In cross mode one pool backs every position, so a loss on one position reduces margin for all. Proposal: one line under Collateral, for example <em>Backs all cross positions</em>, plus Used and Free figures per position in the positions table.</dd>
+      <dt>I-07</dt><dd><strong>Explain isolated-only markets at the badge.</strong> GOLD, SILVER and COPPER carry an ISO badge in the market list; the reason appears only inside the ticket (Rec3 00:08). Proposal: a tooltip on the badge with the same text, so the constraint is known before the market is opened.</dd>
+      <dt>I-08</dt><dd><strong>Explain registration before the tap.</strong> The Register button follows "needs ~0.02 SOL for rent and fees" but does not say that trading perps requires a one-time on-chain Phoenix trader account. Proposal: a short explainer and the exact cost in the confirmation, shown once per wallet.</dd>
+      <dt>I-09</dt><dd><strong>Distinguish market trades from own trades.</strong> The Trades tab beside the order book lists all market trades, while own fills sit under Trade History. The two names are close. Proposal: rename to Market trades and My trades, and add a venue label, for example "Phoenix", to the market tape.</dd>
+      <dt>I-10</dt><dd><strong>Full-screen chart with analysis tools.</strong> The chart offers price and time only, with no indicators or drawing tools, and no full-screen mode. Proposal: a full-screen view with core indicators (volume, moving averages, RSI) and basic drawing (horizontal line, trend line), either through a licensed charting library or a built-in subset.</dd>
+      <dt>I-11</dt><dd><strong>Guide holders of other assets into perps.</strong> Perps accepts USDC. A wallet holding USDT and SOL (Rec2 01:20) sees "Deposit USDC to trade" without being told that its USDT and SOL can be converted in one step. Proposal: when USDC is short, show "You hold 2 USDT and 0.06 SOL. Swap and deposit" as the primary action on the ticket.</dd>
+    </dl>
+      <figure class="wide">
+        <img src="ev/i02-chart.jpg" alt="SOL-PERP chart and positions table with an open long and no chart line">
+        <figcaption>Figure I-02. Rec5 01:12. SOL-PERP chart with a SOL-PERP long open at 100.36: no entry line.</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>The SOL-PERP trading screen while a long position is open. The positions table at the bottom lists SOL-PERP Long, Size 0.01 SOL, Entry $100.36 and Liq $95.36. The chart above shows only the price candles and a dotted line for the latest price at 100.19. No line marks the entry price or the liquidation price. There is also no way to act on the position from the chart: it cannot be closed or changed with one tap from the price area.</dd><dt>Severity</dt><dd>Improvement proposal I-02. This is a missing feature, not a defect.</dd><dt>Cause</dt><dd>The chart does not draw any overlay for the user's own positions or orders.</dd><dt>Possible impact</dt><dd>Traders cannot see on the price scale where they entered, how far the price is from liquidation, or which positions are open, without reading the table. Most perps and forex platforms draw these lines, so their absence makes the product feel incomplete to experienced traders. Closing a position requires going to the positions table, which is slow when the price is moving.</dd><dt>Solution</dt><dd>Draw a line for the entry price and one for the liquidation price of each open position, coloured by long or short, and attach a small Close button to the entry line so the position can be closed in one tap from the chart. When take profit and stop loss are added (I-01), draw them as lines that can be dragged to change the level.</dd><dt>Evidence</dt><dd>Frame taken from recording Rec5 at 01:12 (file rec-5-perps-orders.mp4, complete and muted). Open the recording in the Evidence recordings section and play from a few seconds before this time to see the full sequence around the frame.</dd><dt>Steps to reproduce</dt><dd>1. Open a perps market and place a small market order. 2. Look at the chart and the order book while the position is open. 3. Compare with the expected behaviour described in the Solution.</dd><dt>Feedback for the team</dt><dd>Chart lines for entry, liquidation, take profit and stop loss, with a Close button on the entry line, are standard on trading platforms and would let users manage positions without leaving the chart.</dd></dl>
+      </figure>
+      <figure class="wide tall">
+        <img src="ev/i05-book.jpg" alt="Order book bid side">
+        <figcaption>Figure I-05. Screenshot 22:14. ETH-PERP bids: bars per level, no size unit.</figcaption>
+        <dl class="fnote"><dt>What it shows</dt><dd>The bid side of the ETH-PERP order book. Most price levels show sizes between 2 and 45, but the bars behind them are almost invisible, while the two levels with 226.951 and 119.416 have very wide bars. The Size column header does not state whether the figures are in ETH or in USD.</dd><dt>Severity</dt><dd>Improvement proposal I-05. This concerns readability, not a defect. Equal sizes repeated across levels are a normal market maker pattern.</dd><dt>Cause</dt><dd>Each bar is scaled against the largest single level, so one large order compresses every other bar, and the unit of the size column is not labelled.</dd><dt>Possible impact</dt><dd>Users cannot judge at a glance how much liquidity sits near the current price, and some may conclude the market is thin or that the order book is broken.</dd><dt>Solution</dt><dd>Use cumulative depth bars that grow from the best price outwards, add the unit to the Size header with a toggle between ETH and USD, and show the spread between the best bid and best ask.</dd><dt>Evidence</dt><dd>Device screenshot taken at 22:14 on 13 September 2026. The file is kept unedited with the original screenshots of the session.</dd><dt>Steps to reproduce</dt><dd>1. Open a perps market and place a small market order. 2. Look at the chart and the order book while the position is open. 3. Compare with the expected behaviour described in the Solution.</dd><dt>Feedback for the team</dt><dd>Cumulative depth bars and a labelled size column would make liquidity easy to read and prevent users from wrongly concluding that the market is thin.</dd></dl>
+      </figure>
+  </section>
+
+  <section class="pad">
+    <h2><span class="num">7</span>Confirmed working</h2>
+    <dl class="fields">
+      <dt>O-01</dt><dd><strong>No wallet prompt per trade.</strong> Registration, collateral deposit, long, short and close all executed from in-app buttons with no signature popup (Rec5 00:19 to 02:14). This removes the main friction of on-chain trading and should be kept as a regression baseline.</dd>
+      <dt>O-02</dt><dd><strong>Relay route shortfall handling.</strong> The cross-chain route disables Buy and explains where funds sit (Rec1 00:56). It is the reference behavior for A-01.</dd>
+    </dl>
+  </section>
+
+  <section class="pad">
+    <h2><span class="num">8</span>Recommended fix order</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Order</th><th>ID</th><th>Rationale</th><th>Est. effort</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">1</td><td class="mono">A-05, A-13</td><td>Possible duplicate real order; a misreported fill already caused an unintended position. Both share the trader state 429 path, so fix retry and caching once.</td><td>Medium</td></tr>
+          <tr><td class="mono">2</td><td class="mono">A-01</td><td>Reference fix exists on the Relay route.</td><td>Low</td></tr>
+          <tr><td class="mono">3</td><td class="mono">A-06</td><td>Read lot size once; fixes size in dialog and toast.</td><td>Low</td></tr>
+          <tr><td class="mono">4</td><td class="mono">A-10</td><td>One default change; removes the disappearing position report.</td><td>Low</td></tr>
+          <tr><td class="mono">5</td><td class="mono">A-02, A-12</td><td>Fee reserve and error copy in the same component.</td><td>Low</td></tr>
+          <tr><td class="mono">6</td><td class="mono">A-08, A-09</td><td>Onboarding: timeout and quote readiness.</td><td>Medium</td></tr>
+          <tr><td class="mono">7</td><td class="mono">A-11</td><td>Reuse the spot interval control.</td><td>Medium</td></tr>
+          <tr><td class="mono">8</td><td class="mono">A-04</td><td>Cheap; closes the retry chain with A-01.</td><td>Low</td></tr>
+          <tr><td class="mono">9</td><td class="mono">A-03, A-07</td><td>Shared data-layer error states.</td><td>Medium</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="pad">
+    <h2><span class="num">9</span>Evidence recordings</h2>
+    <dl class="fields" style="margin-bottom:0.4rem">
+      <dt>Editing</dt><dd>Two sets are provided. Each defect record embeds a short highlight clip cut to the key moments. This section keeps every recording complete, with nothing removed, reordered or trimmed, so the clips can be checked against the full context. All files were re-encoded to 1280 px width.</dd>
+      <dt>Audio</dt><dd>Removed from all files. Video streams only.</dd>
+      <dt>Navigation</dt><dd>The Play buttons in each record seek to the relevant moment. The indexes are aids, not a substitute for full review.</dd>
+    </dl>
+
+    <div class="vid">
+      <h3>Rec0. Spot order panel, 8 Sep 2026, 103.5 s</h3>
+      <video id="rec0" controls muted preload="metadata" poster="f_030.jpg"><source src="spot-session-full.mp4" type="video/mp4">spot-session-full.mp4</video>
+      <div class="scroll"><table style="margin-top:0.6rem">
+        <thead><tr><th>Time</th><th>ID</th><th>Observation</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">00:00</td><td class="mono">A-01</td><td>USDC 0, entered 50. Warning shown, Buy enabled.</td></tr>
+          <tr><td class="mono">00:18</td><td class="mono">-</td><td>Sell 0.05 SOL accepted.</td></tr>
+          <tr><td class="mono">00:22</td><td class="mono">A-04</td><td>Swap Success; balances still old.</td></tr>
+          <tr><td class="mono">00:30</td><td class="mono">A-04</td><td>Balances corrected, about 8 s later.</td></tr>
+          <tr><td class="mono">00:58</td><td class="mono">A-02</td><td>Max fills 0.137792 SOL; Sell disabled for 14 s.</td></tr>
+          <tr><td class="mono">01:14</td><td class="mono">A-03</td><td>Trades panel DEGRADED.</td></tr>
+          <tr><td class="mono">01:18</td><td class="mono">A-02</td><td>75 percent enables Sell.</td></tr>
+          <tr><td class="mono">01:22</td><td class="mono">A-03</td><td>Quote fields blank; chart continues.</td></tr>
+          <tr><td class="mono">01:30</td><td class="mono">A-01</td><td>USDC 13.8, entered 50. Same state.</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="vid">
+      <h3>Rec1. Spot routes and Max, 13 Sep 2026 20:48, 80.5 s</h3>
+      <video id="rec1" controls muted preload="metadata"><source src="rec-1-spot-max.mp4" type="video/mp4">rec-1-spot-max.mp4</video>
+      <div class="scroll"><table style="margin-top:0.6rem">
+        <thead><tr><th>Time</th><th>ID</th><th>Observation</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">00:00-00:12</td><td class="mono">A-01</td><td>Tulip, USDC 13.8, entered 50. Warning shown, Buy Tulip enabled.</td></tr>
+          <tr><td class="mono">00:16-00:44</td><td class="mono">-</td><td>Base ETH and HyperEVM HYPE pairs browsed.</td></tr>
+          <tr><td class="mono">00:56</td><td class="mono">O-02</td><td>Arbitrum ETH via Relay: shortfall message, Buy disabled.</td></tr>
+          <tr><td class="mono">01:00</td><td class="mono">A-12</td><td>Sell SOL, amount 0: No SOL balance to sell.</td></tr>
+          <tr><td class="mono">01:04</td><td class="mono">A-02</td><td>Max 0.063742 SOL: Jupiter quote 400.</td></tr>
+          <tr><td class="mono">01:08</td><td class="mono">-</td><td>Wallet menu opened and closed.</td></tr>
+          <tr><td class="mono">01:14</td><td class="mono">A-02</td><td>75 percent, 0.047807 SOL: no quote.</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="vid">
+      <h3>Rec2. Balances, portfolio and perps entry, 13 Sep 2026 20:49, 127.7 s</h3>
+      <video id="rec2" controls muted preload="metadata"><source src="rec-2-balances-perps.mp4" type="video/mp4">rec-2-balances-perps.mp4</video>
+      <div class="scroll"><table style="margin-top:0.6rem">
+        <thead><tr><th>Time</th><th>ID</th><th>Observation</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">00:00-00:28</td><td class="mono">A-02</td><td>Jupiter quote 400 persists, including at 25 percent. Solscan checked in between.</td></tr>
+          <tr><td class="mono">00:32-01:08</td><td class="mono">-</td><td>Buy 1 USDT twice. Swap Success; USDC 13.8 to 11.8. Tether site opened.</td></tr>
+          <tr><td class="mono">01:12-01:16</td><td class="mono">-</td><td>SOL-PERP: Register as a Phoenix trader.</td></tr>
+          <tr><td class="mono">01:20-01:32</td><td class="mono">-</td><td>Portfolio: spot USD 19.88 across USDC, SOL and USDT; perps collateral empty; Transfer dialog.</td></tr>
+          <tr><td class="mono">01:40</td><td class="mono">-</td><td>Market search for "us" returns no results.</td></tr>
+          <tr><td class="mono">01:48-02:04</td><td class="mono">A-07</td><td>AAPL-PERP; market list becomes No markets in this category.</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="vid">
+      <h3>Rec3. Perps markets and registration, 13 Sep 2026 21:04, 62.0 s</h3>
+      <video id="rec3" controls muted preload="metadata"><source src="rec-3-perps-register.mp4" type="video/mp4">rec-3-perps-register.mp4</video>
+      <div class="scroll"><table style="margin-top:0.6rem">
+        <thead><tr><th>Time</th><th>ID</th><th>Observation</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">00:00-00:16</td><td class="mono">I-01</td><td>SILVER-PERP ticket: Market, Limit, Reduce only. No TP or SL.</td></tr>
+          <tr><td class="mono">00:20-00:32</td><td class="mono">-</td><td>SOL-PERP ticket, Register to trade.</td></tr>
+          <tr><td class="mono">00:36-01:02</td><td class="mono">A-08</td><td>Registering... with no progress until the end of the recording.</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="vid">
+      <h3>Rec4. Chart interval, 13 Sep 2026 21:17, 26.0 s</h3>
+      <video id="rec4" controls muted preload="metadata"><source src="rec-4-perps-timeframe.mp4" type="video/mp4">rec-4-perps-timeframe.mp4</video>
+      <div class="scroll"><table style="margin-top:0.6rem">
+        <thead><tr><th>Time</th><th>ID</th><th>Observation</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">00:00</td><td class="mono">A-11</td><td>SOL-PERP chart, no interval control.</td></tr>
+          <tr><td class="mono">00:04-00:08</td><td class="mono">A-11, A-01</td><td>USDT spot for comparison: interval buttons present. Buy USDT enabled beside Not enough USDC.</td></tr>
+          <tr><td class="mono">00:12-00:24</td><td class="mono">A-11</td><td>Back on SOL-PERP; sidebar toggled; axis shows day numbers only.</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="vid">
+      <h3>Rec5. Perps orders, 13 Sep 2026 22:09, 136.3 s</h3>
+      <video id="rec5" controls muted preload="metadata"><source src="rec-5-perps-orders.mp4" type="video/mp4">rec-5-perps-orders.mp4</video>
+      <div class="scroll"><table style="margin-top:0.6rem">
+        <thead><tr><th>Time</th><th>ID</th><th>Observation</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">00:08-00:19</td><td class="mono">A-08</td><td>After reload: Register, then Trader registered.</td></tr>
+          <tr><td class="mono">00:28</td><td class="mono">A-09</td><td>Funding Failed, USD 15.41: Quote not ready to sign.</td></tr>
+          <tr><td class="mono">00:48-00:52</td><td class="mono">-</td><td>Collateral Updated, USD 10.</td></tr>
+          <tr><td class="mono">01:04-01:12</td><td class="mono">A-06, O-01</td><td>Confirm Long 0.012 SOL; placed; position 0.01 SOL. No wallet prompt.</td></tr>
+          <tr><td class="mono">01:33-01:36</td><td class="mono">A-05, I-03, I-04</td><td>Confirm Short 0.012 once; placed at 01:35.7; Order Failed stacks at 01:36.0; long closed.</td></tr>
+          <tr><td class="mono">01:36-01:45</td><td class="mono">A-05</td><td>Order Failed, Phoenix trader state 429, persists.</td></tr>
+          <tr><td class="mono">01:44-02:00</td><td class="mono">-</td><td>Trades tab browsed.</td></tr>
+          <tr><td class="mono">02:04-02:14</td><td class="mono">A-05, A-06</td><td>Short raised to 1.3 USD; placed; new short of 0.01 SOL.</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </section>
+
+  <section class="pad">
+    <h2><span class="num">10</span>Coverage limitations</h2>
+    <ul class="tight">
+      <li>Recordings from one device and one browser. No desktop viewport, no iOS, no external wallet.</li>
+      <li>No finding correlated against server logs or full transaction history. Root causes are hypotheses from observed behavior; A-05 needs Trade History to settle hypothesis A against B.</li>
+      <li>Transaction signatures are truncated as the app displays them.</li>
+      <li>Recordings are 30 fps; motion defects faster than that cannot be measured from them.</li>
+      <li>Not exercised: limit orders, isolated margin orders, liquidation, withdrawals, funding payments, Rewards, Leaderboard, Card.</li>
+      <li>No load, concurrency or adversarial input testing.</li>
+    </ul>
+    <p class="note">Areas listed above are untested, not verified healthy.</p>
+  </section>
+
+  <section class="pad">
+    <h2><span class="num">11</span>Estimated value of findings</h2>
+    <p class="note" style="margin:0 0 0.9rem">Author's own estimate of the value of each finding, based on its severity and the effort to reproduce and document it. No reward was offered or promised, and no other company's rates are used. The upper case assumes A-05 is confirmed as P0 and all improvements are accepted.</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>Level</th><th>IDs</th><th>Count</th><th>USDC each</th><th>Subtotal</th></tr></thead>
+        <tbody>
+          <tr><td class="sev s0">P0</td><td class="mono">A-05 (if confirmed)</td><td class="mono">1</td><td class="mono">150</td><td class="mono">150</td></tr>
+          <tr><td class="sev s1">P1</td><td class="mono">A-01, A-06</td><td class="mono">2</td><td class="mono">50</td><td class="mono">100</td></tr>
+          <tr><td class="sev s2">P2</td><td class="mono">A-02, A-03, A-07, A-08, A-09, A-10, A-11, A-13</td><td class="mono">8</td><td class="mono">20</td><td class="mono">160</td></tr>
+          <tr><td class="sev s3">P3</td><td class="mono">A-04, A-12</td><td class="mono">2</td><td class="mono">5</td><td class="mono">10</td></tr>
+          <tr><td class="mono">IMP</td><td class="mono">I-01 to I-11 (if accepted)</td><td class="mono">11</td><td class="mono">5</td><td class="mono">55</td></tr>
+          <tr><td colspan="4"><strong>Upper estimate</strong></td><td class="mono"><strong>475</strong></td></tr>
+          <tr><td colspan="4">Base estimate: A-05 as P1 at 50, improvements not accepted</td><td class="mono">320</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  <span>QA-2609-11 rev 4</span>
+  <span>13 defects: 3 P1, 8 P2, 2 P3. 11 improvements. Est. value up to USDC 475.</span>
+  <span>Confidential</span>
+</footer>
+
+<script>
+  // Play buttons seek the matching recording; the page stays usable without this script.
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest ? e.target.closest(".jump") : null;
+    if (!b) return;
+    var v = document.getElementById(b.getAttribute("data-v"));
+    if (!v) return;
+    v.scrollIntoView({ behavior: "smooth", block: "center" });
+    var t = parseFloat(b.getAttribute("data-t")) || 0;
+    var go = function () { v.currentTime = t; var p = v.play(); if (p && p.catch) p.catch(function () {}); };
+    if (v.readyState >= 1) go(); else v.addEventListener("loadedmetadata", go, { once: true });
+  });
+
+  // Language switch: English is the default. Headings, field labels and figure analysis labels
+  // switch to Indonesian; record text stays in English as the reference version.
+  (function () {
+    var ID = {"Document control":"Kontrol dokumen","Scope, environment and method":"Ruang lingkup, lingkungan dan metode","Severity and classification":"Tingkat keparahan dan klasifikasi","Finding register":"Daftar temuan","Defect records":"Rincian cacat","Improvement proposals":"Usulan perbaikan","Confirmed working":"Sudah berjalan baik","Recommended fix order":"Urutan perbaikan","Evidence recordings":"Rekaman bukti","Coverage limitations":"Keterbatasan pengujian","Estimated value of findings":"Estimasi nilai temuan",
+      "Component":"Komponen","Preconditions":"Prasyarat","Steps":"Langkah","Expected":"Diharapkan","Actual":"Kenyataan","Frequency":"Frekuensi","Root cause":"Penyebab","Risk":"Risiko","Recommendation":"Rekomendasi","Verification needed":"Verifikasi lanjutan","Regression risk":"Risiko regresi",
+      "What it shows":"Yang terlihat","Severity":"Tingkat","Cause":"Penyebab","Possible impact":"Kemungkinan dampak","Solution":"Solusi","Evidence":"Bukti","Steps to reproduce":"Langkah reproduksi","Feedback for the team":"Masukan untuk tim",
+      "Report ID":"ID laporan","Revision":"Revisi","Supersedes":"Menggantikan","Prepared for":"Disusun untuk","Author":"Penulis","Classification":"Klasifikasi","Distribution":"Distribusi","Status":"Status","Change summary":"Ringkasan perubahan","Components":"Komponen","Sessions":"Sesi","Device":"Perangkat","Wallet":"Dompet","Funds":"Dana","Method":"Metode","Transactions":"Transaksi","Not tested":"Tidak diuji","Editing":"Penyuntingan","Audio":"Audio","Navigation":"Navigasi"};
+    var nodes = document.querySelectorAll("h2, dt");
+    var orig = [];
+    nodes.forEach(function (n) {
+      var t = n.lastChild && n.lastChild.nodeType === 3 ? n.lastChild : null;
+      orig.push(t ? t.nodeValue : null);
+    });
+    var btn = document.getElementById("lang"), id = false;
+    btn.addEventListener("click", function () {
+      id = !id;
+      nodes.forEach(function (n, i) {
+        var t = n.lastChild && n.lastChild.nodeType === 3 ? n.lastChild : null;
+        if (!t || orig[i] == null) return;
+        t.nodeValue = id ? (ID[orig[i].trim()] || orig[i]) : orig[i];
+      });
+      document.documentElement.lang = id ? "id" : "en";
+      btn.textContent = id ? "English" : "Bahasa Indonesia";
+    });
+  })();
+</script>
+
+</body>
+</html>
